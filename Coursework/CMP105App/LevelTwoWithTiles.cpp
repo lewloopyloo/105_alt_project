@@ -1,7 +1,7 @@
 #include "LevelTwoWithTiles.h"
 
 LevelTwoWithTiles::LevelTwoWithTiles(sf::RenderWindow& window, Input& input, GameState& gameState, AudioManager& audio)
-	: Scene(window, input, gameState, audio), m_alertText(m_font)
+	: Scene(window, input, gameState, audio), m_alertText(m_font), m_deathText(m_font)
 {
 	GameObject tile;
 	std::vector<GameObject> tileSet;
@@ -71,7 +71,7 @@ LevelTwoWithTiles::LevelTwoWithTiles(sf::RenderWindow& window, Input& input, Gam
 		tile.setTextureRect({
 			{(tile_size + sheet_spacing) * col, (tile_size + sheet_spacing) * row},
 			{tile_size, tile_size} });
-		tile.setCollider(false);		// don't collide with background
+		tile.setCollider(false); 		// don't collide with background
 		tileSet.push_back(tile);
 	}
 
@@ -124,7 +124,17 @@ LevelTwoWithTiles::LevelTwoWithTiles(sf::RenderWindow& window, Input& input, Gam
 	m_alertText.setCharacterSize(36);
 	m_alertText.setFillColor(sf::Color::Black);
 
-	
+	// Death overlay initialisation
+	m_deathOverlay.setSize({ static_cast<float>(m_window.getSize().x), static_cast<float>(m_window.getSize().y) });
+	m_deathOverlay.setFillColor(sf::Color(0, 0, 0, 180)); // semi-transparent black
+
+	m_deathText.setFont(m_font);
+	m_deathText.setCharacterSize(36);
+	m_deathText.setFillColor(sf::Color::White);
+	m_deathText.setOutlineColor(sf::Color::Black);
+	m_deathText.setOutlineThickness(2.f);
+	m_deathText.setString("You Died\n\nPress R to Respawn\nPress Esc to Menu");
+	// position will be set in render so it is centered on the current view
 
 }
 
@@ -133,6 +143,8 @@ void LevelTwoWithTiles::onBegin()
 	m_boopBlock.setAlive(false);
 	m_coin.setAlive(false);
 	m_player.setPosition({ 100, 100 });
+	m_player.setCanDoubleJump(false); // ensure double-jump is disabled at level start
+	m_isDead = false;
 	m_audio.playMusicbyName("bgm3");
 }
 
@@ -147,20 +159,46 @@ void LevelTwoWithTiles::onEnd()
 
 void LevelTwoWithTiles::handleInput(float dt)
 {
-	m_player.handleInput(dt);
+	// keep forwarding input to player only when not dead so HUD/menus respond correctly
+	if (!m_isDead)
+		m_player.handleInput(dt);
 
 	// if I press F on the flag  / I press escape.
-	if (((m_flag.getPosition() - m_player.getPosition()).length() < 75 &&
-		m_input.isPressed(sf::Keyboard::Scancode::F)) ||
-		m_input.isPressed(sf::Keyboard::Scancode::Escape))
+	if (!m_isDead &&
+		((m_flag.getPosition() - m_player.getPosition()).length() < 75 &&
+		m_input.isPressed(sf::Keyboard::Scancode::F)) )
 	{
 		// return to menu.
 		m_gameState.setCurrentState(State::MENU);
+	}
+
+	// if dead allow quick actions: respawn or go to menu
+	if (m_isDead)
+	{
+		if (m_input.isPressed(sf::Keyboard::Scancode::R))
+		{
+			m_player.reset();
+			m_player.setCanDoubleJump(false); // lose double-jump on respawn
+			m_isDead = false;
+			// ensure camera is repositioned immediately
+			updateCameraAndBackground();
+		}
+		else if (m_input.isPressed(sf::Keyboard::Scancode::Escape))
+		{
+			m_gameState.setCurrentState(State::MENU);
+		}
 	}
 }
 
 void LevelTwoWithTiles::update(float dt)
 {
+	// If player is dead, skip world updates (only handle input in handleInput)
+	if (m_isDead)
+	{
+		// still update music/other global systems if needed (left empty intentionally)
+		return;
+	}
+
 	m_player.update(dt);
 	m_flag.update(dt);
 	if (m_coin.isAlive()) m_coin.update(dt);
@@ -205,11 +243,12 @@ void LevelTwoWithTiles::update(float dt)
 		m_boopBlock.setAlive(true);
 	}
 
-	// reset if fallen too far
+	// death trigger: fall off map
 	if (m_player.getPosition().y > 1200)
 	{
-		m_player.reset();
+		m_isDead = true;
 		m_audio.playSoundbyName("death");
+		// do not reset player here; wait for player's respawn action
 	}
 
 	updateCameraAndBackground();
@@ -231,6 +270,9 @@ void LevelTwoWithTiles::updateCameraAndBackground()
 	m_window.setView(view);
 
 	m_bgtilemap.setPosition({ player_pos.x - halfViewWidth, 0 });
+
+	// update overlay size in case the window changed
+	m_deathOverlay.setSize({ static_cast<float>(m_window.getSize().x), static_cast<float>(m_window.getSize().y) });
 }
 
 // sets prompt text and position 
@@ -283,5 +325,22 @@ void LevelTwoWithTiles::render()
 	m_window.draw(m_player);
 	if (m_coin.isAlive()) m_window.draw(m_coin);
 	m_window.draw(m_alertText);
+
+	// Death overlay drawn on top when player is dead
+	if (m_isDead)
+	{
+		// ensure overlay covers current view
+		auto viewCenter = m_window.getView().getCenter();
+		auto viewSize = m_window.getView().getSize();
+		m_deathOverlay.setPosition(viewCenter - viewSize * 0.5f);
+
+		// center text in view
+		m_deathText.setPosition({ viewCenter.x - m_deathText.getGlobalBounds().size.x * 0.5f,
+			viewCenter.y - m_deathText.getGlobalBounds().size.y * 0.5f });
+
+		m_window.draw(m_deathOverlay);
+		m_window.draw(m_deathText);
+	}
+
 	endDraw();
 }

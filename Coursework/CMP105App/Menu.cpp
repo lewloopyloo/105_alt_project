@@ -1,7 +1,7 @@
 #include "Menu.h"
 
 Menu::Menu(sf::RenderWindow& hwnd, Input& in, GameState& gs, AudioManager& aud) :
-	Scene(hwnd, in, gs, aud), m_playButtonLabel(m_font), m_playButton2Label(m_font)
+	Scene(hwnd, in, gs, aud), m_playButtonLabel(m_font), m_playButton2Label(m_font), m_exitButtonLabel(m_font)
 {
 	if (!m_font.openFromFile("font/bitcount.ttf"))
 		std::cerr << "failed to load bitcount font";
@@ -10,20 +10,34 @@ Menu::Menu(sf::RenderWindow& hwnd, Input& in, GameState& gs, AudioManager& aud) 
 	m_playButtonLabel.setPosition({ 185,93 });
 	m_playButtonLabel.setString("Level 1");
 	m_playButtonLabel.setFillColor(sf::Color::Black);
+
 	m_playButton2Label.setCharacterSize(24);
 	m_playButton2Label.setPosition({ 185,233 });
 	m_playButton2Label.setString("Level 2");
 	m_playButton2Label.setFillColor(sf::Color::Black);
+
+	// Exit button label
+	m_exitButtonLabel.setCharacterSize(24);
+	m_exitButtonLabel.setPosition({ 185,353 });
+	m_exitButtonLabel.setString("Exit");
+	m_exitButtonLabel.setFillColor(sf::Color::Black);
 
 
 	m_playButton.setSize({ 216,100 });			// setup buttons
 	m_playButton.setPosition({ 108,58 });
 	m_playButton.setCollisionBox({ {0,0}, m_playButton.getSize()});
 	m_playButton.setFillColor(m_defaultButtonColour); 
+
 	m_play2Button.setSize({ 216,100 });			
 	m_play2Button.setPosition({ 108,198 });
 	m_play2Button.setCollisionBox({ {0,0}, m_playButton.getSize() });
 	m_play2Button.setFillColor(m_defaultButtonColour);
+
+	// Exit button (placed under the second button)
+	m_exitButton.setSize({ 216,100 });
+	m_exitButton.setPosition({ 108,318 });
+	m_exitButton.setCollisionBox({ {0,0}, m_exitButton.getSize() });
+	m_exitButton.setFillColor(m_defaultButtonColour);
 
 	if (!m_titleSplash.loadFromFile("gfx/title_splash.png")) std::cerr << "no splash found";
 	m_titleImage.setTexture(&m_titleSplash);
@@ -33,6 +47,7 @@ Menu::Menu(sf::RenderWindow& hwnd, Input& in, GameState& gs, AudioManager& aud) 
 void Menu::handleInput(float dt)
 {
 	sf::Vector2i mousePos{ m_input.getMouseX(), m_input.getMouseY()};
+
 	if(m_input.isLeftMousePressed() && 
 		Collision::checkBoundingBox(m_playButton, mousePos))
 	{
@@ -42,6 +57,12 @@ void Menu::handleInput(float dt)
 		Collision::checkBoundingBox(m_play2Button, mousePos))
 	{
 		m_gameState.setCurrentState(State::LEVELTWO);
+	}
+	// Exit action: close the render window
+	if (m_input.isLeftMousePressed() &&
+		Collision::checkBoundingBox(m_exitButton, mousePos))
+	{
+		m_window.close();
 	}
 }
 
@@ -53,6 +74,8 @@ void Menu::render()
 	m_window.draw(m_playButtonLabel);
 	m_window.draw(m_play2Button);
 	m_window.draw(m_playButton2Label);
+	m_window.draw(m_exitButton);         // draw exit button
+	m_window.draw(m_exitButtonLabel);    // draw exit label
 	endDraw();
 }
 
@@ -75,6 +98,15 @@ void Menu::update(float dt)
 	{
 		m_play2Button.setFillColor(m_defaultButtonColour);
 
+	}
+	// hover for exit button
+	if (Collision::checkBoundingBox(m_exitButton, mousePos))
+	{
+		m_exitButton.setFillColor(m_hoverButtonColour);
+	}
+	else
+	{
+		m_exitButton.setFillColor(m_defaultButtonColour);
 	}
 }
 

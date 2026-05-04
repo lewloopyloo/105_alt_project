@@ -35,8 +35,9 @@ private:
     const sf::Vector2i WORLD_SIZE = { 2880, 648 };
     const sf::Vector2i VIEW_SIZE = { 432, 432 };
 
-    sf::Text m_alertText;
+    // Ensure font is constructed before text so we can initialize text with the font in the ctor initializer list
     sf::Font m_font;
+    sf::Text m_alertText;
     sf::Texture m_tileTexture;
 
     sf::Vector2f m_wallPos = { 11 * 72, 5 * 72 };
@@ -48,5 +49,10 @@ private:
         "I feel so powerful\nalmost like I\ncan double-jump",
         "Press F to end the day"
     };
+
+    // Death screen members (required by LevelTwoWithTiles.cpp)
+    bool m_isDead = false;
+    sf::RectangleShape m_deathOverlay;
+    sf::Text m_deathText;
 };
 
