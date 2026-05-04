@@ -17,11 +17,13 @@ private:
 
     GameObject m_playButton;
     GameObject m_play2Button;
+    GameObject m_play3Button; // new Level 3 button
     GameObject m_exitButton;           // new exit button
 
     sf::Font m_font;
     sf::Text m_playButtonLabel;
     sf::Text m_playButton2Label;
+    sf::Text m_playButton3Label; // label for level 3
     sf::Text m_exitButtonLabel;        // new exit label
 
     GameObject m_titleImage;

@@ -27,8 +27,8 @@ private:
     Player m_player;
     sf::Texture m_tileTexture;
     Lever m_lever;
+    sf::Font m_font;          // ensure font constructed before text
     sf::Text m_alertText;
-    sf::Font m_font;
     std::vector<Flag*> m_flags;
     bool m_flagLeverPulled = false;
     float m_promptTimer;
@@ -37,6 +37,10 @@ private:
     const sf::Vector2i WORLD_SIZE = { 2880, 648 };
     const sf::Vector2i VIEW_SIZE = { 432, 432 };
 
+    // Death screen members
+    bool m_isDead = false;
+    sf::RectangleShape m_deathOverlay;
+    sf::Text m_deathText;
 
 };
 

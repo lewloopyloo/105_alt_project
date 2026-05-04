@@ -1,7 +1,7 @@
 #include "LevelWithTiles.h"
 
 LevelWithTiles::LevelWithTiles(sf::RenderWindow& window, Input& input, GameState& gameState, AudioManager& audio)
-	: Scene(window, input, gameState, audio), m_alertText(m_font)
+	: Scene(window, input, gameState, audio), m_alertText(m_font), m_deathText(m_font)
 {
 	GameObject tile;
 	std::vector<GameObject> tileSet;
@@ -72,7 +72,7 @@ LevelWithTiles::LevelWithTiles(sf::RenderWindow& window, Input& input, GameState
 		tile.setTextureRect({
 			{(tile_size + sheet_spacing) * col, (tile_size + sheet_spacing) * row},
 			{tile_size, tile_size} });
-		tile.setCollider(false);		// don't collide with background
+		tile.setCollider(false); 		// don't collide with background
 		tileSet.push_back(tile);
 	}
 
@@ -119,18 +119,55 @@ LevelWithTiles::LevelWithTiles(sf::RenderWindow& window, Input& input, GameState
 	m_lever.setUsed(false);
 	m_player.setLeverPosition({ 2730, 252 });
 	m_player.setAudio(&m_audio);
+
+	// Death overlay initialisation
+	m_deathOverlay.setSize({ static_cast<float>(m_window.getSize().x), static_cast<float>(m_window.getSize().y) });
+	m_deathOverlay.setFillColor(sf::Color(0, 0, 0, 180)); // semi-transparent black
+
+	m_deathText.setFont(m_font);
+	m_deathText.setCharacterSize(36);
+	m_deathText.setFillColor(sf::Color::White);
+	m_deathText.setOutlineColor(sf::Color::Black);
+	m_deathText.setOutlineThickness(2.f);
+	m_deathText.setString("You Died\n\nPress R to Respawn\nPress Esc to Menu");
+	// position will be set in render so it is centered on the current view
 }
 
 void LevelWithTiles::handleInput(float dt)
 {
-	m_player.handleInput(dt);
+	// only forward input to player when not dead
+	if (!m_isDead)
+		m_player.handleInput(dt);
 
-	if (m_input.isPressed(sf::Keyboard::Scancode::Escape))
-		m_gameState.setCurrentState(State::MENU);
+	if (!m_isDead)
+	{
+		if (m_input.isPressed(sf::Keyboard::Scancode::Escape))
+			m_gameState.setCurrentState(State::MENU);
+	}
+	else
+	{
+		// when dead allow respawn or go to menu
+		if (m_input.isPressed(sf::Keyboard::Scancode::R))
+		{
+			m_player.reset();
+			m_isDead = false;
+			// ensure camera is repositioned immediately
+			updateCameraAndBackground();
+		}
+		else if (m_input.isPressed(sf::Keyboard::Scancode::Escape))
+		{
+			m_gameState.setCurrentState(State::MENU);
+		}
+	}
 }
 
 void LevelWithTiles::update(float dt)
 {
+	// If player is dead, skip world updates
+	if (m_isDead)
+	{
+		return;
+	}
 
 	if (m_flagLeverPulled)
 	{
@@ -195,19 +232,15 @@ void LevelWithTiles::update(float dt)
 	}
 	if (m_player.getGameEndTriggered())
 	{
-		
 		m_gameState.setCurrentState(State::MENU);
 	}
 
 
-	// reset if fallen too far
+	// death trigger: fall off map
 	if (m_player.getPosition().y > 1200)
 	{
-		if (m_input.isPressed(sf::Keyboard::Scancode::R))
-		{
-			m_player.reset();
-			m_audio.playSoundbyName("death");
-		}
+		m_isDead = true;
+		m_audio.playSoundbyName("death");
 	}
 
 	// camera follows player, bounded.
@@ -241,6 +274,23 @@ void LevelWithTiles::render()
 	for (auto& flag : m_flags) m_window.draw(*flag);
 	m_window.draw(m_player);
 	m_window.draw(m_alertText);
+
+	// Death overlay drawn on top when player is dead
+	if (m_isDead)
+	{
+		// ensure overlay covers current view
+		auto viewCenter = m_window.getView().getCenter();
+		auto viewSize = m_window.getView().getSize();
+		m_deathOverlay.setPosition(viewCenter - viewSize * 0.5f);
+
+		// center text in view
+		m_deathText.setPosition({ viewCenter.x - m_deathText.getGlobalBounds().size.x * 0.5f,
+			viewCenter.y - m_deathText.getGlobalBounds().size.y * 0.5f });
+
+		m_window.draw(m_deathOverlay);
+		m_window.draw(m_deathText);
+	}
+
 	endDraw();
 }
 
@@ -248,6 +298,7 @@ void LevelWithTiles::onBegin()
 {
 	std::cout << "Level one has been started\n";
 	m_audio.playMusicbyName("bgm1");
+	m_isDead = false;
 	
 }
 
