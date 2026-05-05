@@ -194,12 +194,6 @@ void LevelWithTiles::update(float dt)
 		// turn off prompt
 		m_alertText.setString("");
 	}
-	else if (m_player.getPosition().y > WORLD_SIZE.y)
-	{
-		m_alertText.setCharacterSize(24);
-		m_alertText.setPosition(m_window.getView().getCenter());
-		m_alertText.setString("Press R to reset");
-	}
 	// show text if the player in lever range
 	else if (m_player.inLeverRange())
 	{
@@ -240,6 +234,7 @@ void LevelWithTiles::update(float dt)
 	if (m_player.getPosition().y > 1200)
 	{
 		m_isDead = true;
+		m_alertText.setString("");
 		m_audio.playSoundbyName("death");
 	}
 
@@ -273,7 +268,8 @@ void LevelWithTiles::render()
 	m_window.draw(m_lever);
 	for (auto& flag : m_flags) m_window.draw(*flag);
 	m_window.draw(m_player);
-	m_window.draw(m_alertText);
+	if (!m_isDead)
+		m_window.draw(m_alertText);
 
 	// Death overlay drawn on top when player is dead
 	if (m_isDead)
