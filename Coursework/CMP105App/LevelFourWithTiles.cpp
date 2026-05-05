@@ -197,6 +197,8 @@ void LevelFourWithTiles::resetPuzzle()
 
 void LevelFourWithTiles::activateNearestPad()
 {
+    if (m_doorOpen) return;
+
     int nearestIndex = -1;
     float nearestDistSq = m_padInteractDistance * m_padInteractDistance;
     const sf::Vector2f playerCenter = m_player.getPosition() + m_player.getSize() * 0.5f;
@@ -214,29 +216,43 @@ void LevelFourWithTiles::activateNearestPad()
 
     if (nearestIndex < 0) return;
 
-    m_enteredSequence.push_back(nearestIndex);
+    if (m_enteredSequence.size() >= m_correctSequence.size()) return;
 
-    size_t pos = m_enteredSequence.size() - 1;
-    if (m_enteredSequence[pos] != m_correctSequence[pos])
+    m_enteredSequence.push_back(nearestIndex);
+    updatePuzzleText();
+
+    if (m_enteredSequence.size() < m_correctSequence.size()) return;
+
+    bool match = true;
+    for (size_t i = 0; i < m_correctSequence.size(); ++i)
     {
-        m_feedbackMessage = "Wrong order. Reset.";
+        if (m_enteredSequence[i] != m_correctSequence[i])
+        {
+            match = false;
+            break;
+        }
+    }
+
+    if (!match)
+    {
+        resetPuzzle();
+        m_feedbackMessage = "Wrong code. Puzzle reset.";
         m_feedbackColor = sf::Color(240, 90, 90);
         m_feedbackClock.restart();
         m_showFeedback = true;
-        m_enteredSequence.clear();
+        updatePuzzleText();
+        return;
     }
-    else if (m_enteredSequence.size() == m_correctSequence.size())
-    {
-        m_doorOpen = true;
-        m_feedbackMessage = "Correct sequence! Door opened.";
-        m_feedbackColor = sf::Color(110, 240, 120);
-        m_feedbackClock.restart();
-        m_showFeedback = true;
-        m_flagText.setFillColor(sf::Color(100, 230, 120));
-        m_flagText.setString("Door: OPEN - Reach flag and press F");
-        m_door.setCollider(false);
-        m_door.setFillColor(sf::Color(100, 190, 120, 120));
-    }
+
+    m_doorOpen = true;
+    m_feedbackMessage = "Correct sequence! Door opened.";
+    m_feedbackColor = sf::Color(110, 240, 120);
+    m_feedbackClock.restart();
+    m_showFeedback = true;
+    m_flagText.setFillColor(sf::Color(100, 230, 120));
+    m_flagText.setString("Door: OPEN - Reach flag and press F");
+    m_door.setCollider(false);
+    m_door.setFillColor(sf::Color(100, 190, 120, 120));
 
     updatePuzzleText();
 }
