@@ -129,9 +129,17 @@ void LevelFourWithTiles::render()
     const auto viewCenter = m_window.getView().getCenter();
     const auto viewSize = m_window.getView().getSize();
     const sf::Vector2f topLeft = viewCenter - viewSize * 0.5f;
-    m_label.setPosition(topLeft + sf::Vector2f(16.f, 12.f));
-    m_sequenceText.setPosition(topLeft + sf::Vector2f(16.f, 46.f));
-    m_flagText.setPosition(topLeft + sf::Vector2f(16.f, 104.f));
+    const float left = topLeft.x + 16.f;
+    float y = topLeft.y + 12.f;
+    const float lineGap = 10.f;
+
+    m_label.setPosition({ left, y });
+    y += m_label.getGlobalBounds().size.y + lineGap;
+
+    m_sequenceText.setPosition({ left, y });
+    y += m_sequenceText.getGlobalBounds().size.y + lineGap;
+
+    m_flagText.setPosition({ left, y });
 
     m_window.draw(m_label);
     m_window.draw(m_sequenceText);
