@@ -1,7 +1,4 @@
-// Main
-// Entry point of the application.
-// Handles window creation and window events.
-// Contains the game loop, updates input class and contains the level objects.
+// Entry point: window, scenes, main loop (poll events → dt → scene → clear input).
 // @author Paul Robertson
 // @reviser William Kavanagh (2025)
 
@@ -13,7 +10,7 @@
 #include "Framework/GameState.h"
 #include "LevelWithTiles.h"
 #include "LevelTwoWithTiles.h"
-#include "LevelThreeWithTiles.h" // new level 3 include
+#include "LevelThreeWithTiles.h"
 #include "LevelFourWithTiles.h"
 
 #ifndef SFML_VERSION_MAJOR
@@ -23,7 +20,6 @@
 
 void windowProcess(sf::RenderWindow& window, Input& in)
 {
-	// Handle window events.
 	while (const auto event = window.pollEvent())
 	{
 		if (event->is<sf::Event::Closed>())
@@ -80,26 +76,21 @@ void windowProcess(sf::RenderWindow& window, Input& in)
 int main()
 {
 
-	//Create the window
 	sf::RenderWindow window(sf::VideoMode({ 432, 432 }), "Dino Handyman");
 	window.setVerticalSyncEnabled(true);
 
-	// Initialise input and manager objects.
 	AudioManager audioManager;
 	Input input;
 	GameState gameState;
 
 
-	// Create level objects that may reference manager objects
-
 	Menu menu(window, input, gameState, audioManager);
 	LevelWithTiles tile_level(window, input, gameState, audioManager);
 	LevelTwoWithTiles tile_level_two(window, input, gameState, audioManager);
-	LevelThreeWithTiles tile_level_three(window, input, gameState, audioManager); // new level 3 instance
+	LevelThreeWithTiles tile_level_three(window, input, gameState, audioManager);
 	LevelFourWithTiles tile_level_four(window, input, gameState, audioManager);
 	Scene* currentScene = &menu;
 
-	// Initialise objects for delta time
 	sf::Clock clock;
 	float deltaTime = 0.f;
 
@@ -111,20 +102,16 @@ int main()
 		{State::MENU, &menu},
 		{State::LEVELONE, &tile_level},
 		{State::LEVELTWO, &tile_level_two},
-		{State::LEVELTHREE, &tile_level_three}, // register level three
+		{State::LEVELTHREE, &tile_level_three},
 		{State::LEVELFOUR, &tile_level_four}
 	};
 	
-	// Game Loop
 	while (window.isOpen())
 	{
-		//Process window events
 		windowProcess(window, input);
 
-		// Calculate delta time. How much time has passed 
-		// since it was last calculated (in seconds) and restart the clock.
 		deltaTime = clock.restart().asSeconds();
-		if (deltaTime > 0.1f) deltaTime = 0.1f; // Clamp delta time to avoid large jumps
+		if (deltaTime > 0.1f) deltaTime = 0.1f; // avoid huge dt after a hitch
 
 		State requestedState = gameState.getCurrentState();
 		if (sceneRegistry[requestedState] != currentScene)
@@ -133,14 +120,11 @@ int main()
 			currentScene = sceneRegistry[requestedState];
 			currentScene->onBegin();
 		}
-		// run the core loop for the current scene
 		currentScene->handleInput(deltaTime);
 		currentScene->update(deltaTime);
 		currentScene->render();
 
-		// Update input class, handle pressed keys
-		// Must be done last.
-		input.update();
+		input.update(); // after scenes so "pressed this frame" clears correctly
 	}
 
 }

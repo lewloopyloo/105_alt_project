@@ -5,7 +5,7 @@
 #include "Player.h"
 #include "Coin.h"
 #include "Flag.h"
-#include <algorithm> // for clamp
+#include <algorithm>
 
 
 class LevelTwoWithTiles :
@@ -35,8 +35,7 @@ private:
     const sf::Vector2i WORLD_SIZE = { 2880, 648 };
     const sf::Vector2i VIEW_SIZE = { 432, 432 };
 
-    // Ensure font is constructed before text so we can initialize text with the font in the ctor initializer list
-    sf::Font m_font;
+    sf::Font m_font; // declare before m_alertText / m_deathText (ctor passes m_font into sf::Text)
     sf::Text m_alertText;
     sf::Texture m_tileTexture;
 
@@ -50,7 +49,6 @@ private:
         "Press F to end the day"
     };
 
-    // Death screen members (required by LevelTwoWithTiles.cpp)
     bool m_isDead = false;
     sf::RectangleShape m_deathOverlay;
     sf::Text m_deathText;

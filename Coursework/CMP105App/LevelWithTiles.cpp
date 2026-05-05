@@ -30,8 +30,7 @@ LevelWithTiles::LevelWithTiles(sf::RenderWindow& window, Input& input, GameState
 		tileSet.push_back(tile);
 	}
 
-	// Add Blank
-	tile.setTextureRect({ {0, 0}, {-24, -24} }); // Empty rect for blank
+	tile.setTextureRect({ {0, 0}, {-24, -24} }); // blank tile index in maps
 	int b = tileSet.size();
 	tile.setCollider(false);
 	tileSet.push_back(tile);
@@ -57,7 +56,6 @@ LevelWithTiles::LevelWithTiles(sf::RenderWindow& window, Input& input, GameState
 
 	tileSet.clear();
 
-	// setup background
 	tile_size = 24;
 	num_columns = 8;
 	num_rows = 3;
@@ -88,11 +86,9 @@ LevelWithTiles::LevelWithTiles(sf::RenderWindow& window, Input& input, GameState
 	m_bgtilemap.setPosition({ 0, 0 });
 	m_bgtilemap.buildLevel();
 
-	// setup player 
 	m_player.setInput(&m_input);
 	m_player.setEdges(0, WORLD_SIZE.x);
 
-	//m setup text
 	if (!m_font.openFromFile("font/bitcount.ttf")) std::cerr << "no font found";
 	m_alertText.setString("Who keeps turning\nthe wind off?");
 	m_alertText.setPosition({ 50, 150});
@@ -101,7 +97,6 @@ LevelWithTiles::LevelWithTiles(sf::RenderWindow& window, Input& input, GameState
 	m_promptTimer = PROMPT_TIME;
 	if (!m_tileTexture.loadFromFile("gfx/tilemap.png")) std::cerr << "no tile image found";
 
-	// setup flags and end game pos
 	m_player.setEndGamePosition({ 24, 325 });
 	for (int i = 0; i < 3; i++)
 	{
@@ -120,7 +115,6 @@ LevelWithTiles::LevelWithTiles(sf::RenderWindow& window, Input& input, GameState
 	m_player.setLeverPosition({ 2730, 252 });
 	m_player.setAudio(&m_audio);
 
-	// Death overlay initialisation
 	m_deathOverlay.setSize({ static_cast<float>(m_window.getSize().x), static_cast<float>(m_window.getSize().y) });
 	m_deathOverlay.setFillColor(sf::Color(0, 0, 0, 180)); // semi-transparent black
 
@@ -130,12 +124,10 @@ LevelWithTiles::LevelWithTiles(sf::RenderWindow& window, Input& input, GameState
 	m_deathText.setOutlineColor(sf::Color::Black);
 	m_deathText.setOutlineThickness(2.f);
 	m_deathText.setString("You Died\n\nPress R to Respawn\nPress Esc to Menu");
-	// position will be set in render so it is centered on the current view
 }
 
 void LevelWithTiles::handleInput(float dt)
 {
-	// only forward input to player when not dead
 	if (!m_isDead)
 		m_player.handleInput(dt);
 
@@ -146,12 +138,10 @@ void LevelWithTiles::handleInput(float dt)
 	}
 	else
 	{
-		// when dead allow respawn or go to menu
 		if (m_input.isPressed(sf::Keyboard::Scancode::R))
 		{
 			m_player.reset();
 			m_isDead = false;
-			// ensure camera is repositioned immediately
 			updateCameraAndBackground();
 		}
 		else if (m_input.isPressed(sf::Keyboard::Scancode::Escape))
@@ -163,7 +153,6 @@ void LevelWithTiles::handleInput(float dt)
 
 void LevelWithTiles::update(float dt)
 {
-	// If player is dead, skip world updates
 	if (m_isDead)
 	{
 		return;
@@ -185,16 +174,14 @@ void LevelWithTiles::update(float dt)
 			m_player.collisionResponse(t);
 		}
 	}
-	
-	// show text if player has dropped very low down
+
+	// Opening line uses a timer; afterwards show hints near lever / end zone only.
 	if (m_promptTimer > 0)
 		m_promptTimer -= dt;
 	else if (m_alertText.getString() != "")
 	{
-		// turn off prompt
 		m_alertText.setString("");
 	}
-	// show text if the player in lever range
 	else if (m_player.inLeverRange())
 	{
 		m_alertText.setCharacterSize(24);
@@ -230,7 +217,6 @@ void LevelWithTiles::update(float dt)
 	}
 
 
-	// death trigger: fall off map
 	if (m_player.getPosition().y > 1200)
 	{
 		m_isDead = true;
@@ -238,7 +224,6 @@ void LevelWithTiles::update(float dt)
 		m_audio.playSoundbyName("death");
 	}
 
-	// camera follows player, bounded.
 	updateCameraAndBackground();
 
 }
@@ -271,15 +256,12 @@ void LevelWithTiles::render()
 	if (!m_isDead)
 		m_window.draw(m_alertText);
 
-	// Death overlay drawn on top when player is dead
 	if (m_isDead)
 	{
-		// ensure overlay covers current view
 		auto viewCenter = m_window.getView().getCenter();
 		auto viewSize = m_window.getView().getSize();
 		m_deathOverlay.setPosition(viewCenter - viewSize * 0.5f);
 
-		// center text in view
 		m_deathText.setPosition({ viewCenter.x - m_deathText.getGlobalBounds().size.x * 0.5f,
 			viewCenter.y - m_deathText.getGlobalBounds().size.y * 0.5f });
 
@@ -301,16 +283,13 @@ void LevelWithTiles::onBegin()
 void LevelWithTiles::onEnd()
 {
 	std::cout << "Level one has been left\n";
-	// reset player and level state
 	m_player.reset();
 	m_flagLeverPulled = false;
-	// reset alert text
 	m_alertText.setString("Who keeps turning\nthe wind off?");
 	m_alertText.setPosition({ 50, 150 });
 	m_alertText.setCharacterSize(36);
 	m_alertText.setFillColor(sf::Color::Black);
 	m_promptTimer = PROMPT_TIME;
-	// sfx
 	m_audio.stopAllSounds();
 	m_audio.stopAllMusic();
 }

@@ -6,10 +6,10 @@ class Scene :
 public:
     Scene(sf::RenderWindow& hwnd, Input& in, GameState& gs, AudioManager& aud);
 
-    // Paired with state transitions in Main.cpp. Called once on open
+    // Called when this scene becomes active (see Main.cpp game loop).
     virtual void onBegin() = 0;
 
-    // Paired with strate transitions in Main.cpp. Called once on close
+    // Called when leaving this scene for another.
     virtual void onEnd() = 0;
 };
 

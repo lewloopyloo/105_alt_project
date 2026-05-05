@@ -29,8 +29,7 @@ LevelTwoWithTiles::LevelTwoWithTiles(sf::RenderWindow& window, Input& input, Gam
 
 	}
 
-	// Add Blank
-	tile.setTextureRect({ {0, 0}, {-24, -24} }); // Empty rect for blank
+	tile.setTextureRect({ {0, 0}, {-24, -24} }); // blank tile index
 	int b = tileSet.size();
 	tile.setCollider(false);
 	tileSet.push_back(tile);
@@ -56,7 +55,6 @@ LevelTwoWithTiles::LevelTwoWithTiles(sf::RenderWindow& window, Input& input, Gam
 
 	tileSet.clear();
 
-	// setup background
 	tile_size = 24;
 	num_columns = 8;
 	num_rows = 3;
@@ -90,7 +88,6 @@ LevelTwoWithTiles::LevelTwoWithTiles(sf::RenderWindow& window, Input& input, Gam
 	m_bgtilemap.setPosition({ 0, -200 });
 	m_bgtilemap.buildLevel();
 
-	// setup player 
 	m_player.setInput(&m_input);
 	m_player.setEdges(0, WORLD_SIZE.x);
 	m_player.setPosition({ 100, 100 });
@@ -98,7 +95,6 @@ LevelTwoWithTiles::LevelTwoWithTiles(sf::RenderWindow& window, Input& input, Gam
 
 	if (!m_font.openFromFile("font/bitcount.ttf")) std::cerr << "no font found";
 
-	// other bits
 	sf::Vector2f boop_location = { 100, 72 * 2 + 100 };
 
 	if (!m_tileTexture.loadFromFile("gfx/tilemap.png")) std::cerr << "failed to find tile images";
@@ -124,7 +120,6 @@ LevelTwoWithTiles::LevelTwoWithTiles(sf::RenderWindow& window, Input& input, Gam
 	m_alertText.setCharacterSize(36);
 	m_alertText.setFillColor(sf::Color::Black);
 
-	// Death overlay initialisation
 	m_deathOverlay.setSize({ static_cast<float>(m_window.getSize().x), static_cast<float>(m_window.getSize().y) });
 	m_deathOverlay.setFillColor(sf::Color(0, 0, 0, 180)); // semi-transparent black
 
@@ -134,7 +129,6 @@ LevelTwoWithTiles::LevelTwoWithTiles(sf::RenderWindow& window, Input& input, Gam
 	m_deathText.setOutlineColor(sf::Color::Black);
 	m_deathText.setOutlineThickness(2.f);
 	m_deathText.setString("You Died\n\nPress R to Respawn\nPress Esc to Menu");
-	// position will be set in render so it is centered on the current view
 
 }
 
@@ -143,44 +137,37 @@ void LevelTwoWithTiles::onBegin()
 	m_boopBlock.setAlive(false);
 	m_coin.setAlive(false);
 	m_player.setPosition({ 100, 100 });
-	m_player.setCanDoubleJump(false); // ensure double-jump is disabled at level start
+	m_player.setCanDoubleJump(false);
 	m_isDead = false;
 	m_audio.playMusicbyName("bgm3");
 }
 
 void LevelTwoWithTiles::onEnd()
 {
-	// reset player
 	m_player.setCanDoubleJump(false);
-	// sfx
 	m_audio.stopAllSounds();
 	m_audio.stopAllMusic();
 }
 
 void LevelTwoWithTiles::handleInput(float dt)
 {
-	// keep forwarding input to player only when not dead so HUD/menus respond correctly
 	if (!m_isDead)
 		m_player.handleInput(dt);
 
-	// if I press F on the flag  / I press escape.
 	if (!m_isDead &&
 		((m_flag.getPosition() - m_player.getPosition()).length() < 75 &&
 		m_input.isPressed(sf::Keyboard::Scancode::F)) )
 	{
-		// return to menu.
 		m_gameState.setCurrentState(State::MENU);
 	}
 
-	// if dead allow quick actions: respawn or go to menu
 	if (m_isDead)
 	{
 		if (m_input.isPressed(sf::Keyboard::Scancode::R))
 		{
 			m_player.reset();
-			m_player.setCanDoubleJump(false); // lose double-jump on respawn
+			m_player.setCanDoubleJump(false);
 			m_isDead = false;
-			// ensure camera is repositioned immediately
 			updateCameraAndBackground();
 		}
 		else if (m_input.isPressed(sf::Keyboard::Scancode::Escape))
@@ -192,18 +179,13 @@ void LevelTwoWithTiles::handleInput(float dt)
 
 void LevelTwoWithTiles::update(float dt)
 {
-	// If player is dead, skip world updates (only handle input in handleInput)
 	if (m_isDead)
-	{
-		// still update music/other global systems if needed (left empty intentionally)
 		return;
-	}
 
 	m_player.update(dt);
 	m_flag.update(dt);
 	if (m_coin.isAlive()) m_coin.update(dt);
 
-	// handle collisions
 	std::vector<GameObject>& level = *m_tilemap.getLevel();
 	for (auto& t : level)
 	{
@@ -219,7 +201,6 @@ void LevelTwoWithTiles::update(float dt)
 		{
 			if (m_player.getPosition().y >= m_boopBlock.getPosition().y)
 			{
-				// if booped from below
 				m_boopBlock.setAlive(false);
 				m_coin.setAlive(true);
 			}
@@ -237,18 +218,15 @@ void LevelTwoWithTiles::update(float dt)
 		}
 	}
 
-	// turn block on when at wall.
 	if ((m_wallPos - m_player.getPosition()).length() < 75)
 	{
 		m_boopBlock.setAlive(true);
 	}
 
-	// death trigger: fall off map
 	if (m_player.getPosition().y > 1200)
 	{
 		m_isDead = true;
 		m_audio.playSoundbyName("death");
-		// do not reset player here; wait for player's respawn action
 	}
 
 	updateCameraAndBackground();
@@ -271,20 +249,16 @@ void LevelTwoWithTiles::updateCameraAndBackground()
 
 	m_bgtilemap.setPosition({ player_pos.x - halfViewWidth, 0 });
 
-	// update overlay size in case the window changed
 	m_deathOverlay.setSize({ static_cast<float>(m_window.getSize().x), static_cast<float>(m_window.getSize().y) });
 }
 
-// sets prompt text and position 
 void LevelTwoWithTiles::checkAndSetMessages()
 {
-	// get position 25% in from top and left (get middle, half both dimensions)
 	sf::Vector2f inner_top_left = m_window.getView().getCenter();
 	sf::Vector2f window_size = { 
 		static_cast<float>(m_window.getSize().x), 
 		static_cast<float>(m_window.getSize().y) };
 	inner_top_left -= window_size * 0.25f;
-	// big wall 
 	if (!m_player.canDoubleJump() && 
 		(m_wallPos - m_player.getPosition()).length() < 75)
 	{
@@ -293,7 +267,6 @@ void LevelTwoWithTiles::checkAndSetMessages()
 		m_alertText.setString(m_promptMessages[0]);
 		
 	}
-	// double jump unlocked
 	else if (m_player.canDoubleJump() && 
 		(m_boopBlock.getPosition() - m_player.getPosition()).length() < 150)
 	{
@@ -302,7 +275,6 @@ void LevelTwoWithTiles::checkAndSetMessages()
 		m_alertText.setString(m_promptMessages[1]);
 	}
 
-	// complete level
 	else if ((m_flag.getPosition() - m_player.getPosition()).length() < 75)
 	{
 		m_alertText.setCharacterSize(24);
@@ -326,15 +298,12 @@ void LevelTwoWithTiles::render()
 	if (m_coin.isAlive()) m_window.draw(m_coin);
 	m_window.draw(m_alertText);
 
-	// Death overlay drawn on top when player is dead
 	if (m_isDead)
 	{
-		// ensure overlay covers current view
 		auto viewCenter = m_window.getView().getCenter();
 		auto viewSize = m_window.getView().getSize();
 		m_deathOverlay.setPosition(viewCenter - viewSize * 0.5f);
 
-		// center text in view
 		m_deathText.setPosition({ viewCenter.x - m_deathText.getGlobalBounds().size.x * 0.5f,
 			viewCenter.y - m_deathText.getGlobalBounds().size.y * 0.5f });
 

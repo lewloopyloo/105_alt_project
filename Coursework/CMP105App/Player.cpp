@@ -39,7 +39,7 @@ void Player::handleInput(float dt)
 	if (m_input->isPressed(sf::Keyboard::Scancode::Space) && m_isGrounded)
 	{
 		m_velocity.y = - JUMP_FORCE;
-		m_isGrounded = false;	// can't be jumping if we're in the air
+		m_isGrounded = false;
 		m_audio->playSoundbyName("jump");
 	}
 	else if (m_input->isPressed(sf::Keyboard::Scancode::Space) && !m_isGrounded && m_canDoubleJump && !m_hasDoubleJumped)
@@ -70,28 +70,24 @@ void Player::handleInput(float dt)
 	}
 
 	// for debugging: "Where am I?"
-	if (m_input->isPressed(sf::Keyboard::Scancode::T))
-	{
+	if (m_input->isPressed(sf::Keyboard::Scancode::T)) // dev: print world position
 		std::cout << getPosition().x << "/" << getPosition().y << "\n";
-	}
 
 }
 
 void Player::update(float dt)
 {
-	// newtonian model
 	m_accel.y += GRAVITY;
 	m_velocity += dt * m_accel;
 	if (m_isGrounded && abs(m_accel.x) < 1.f) m_velocity *= DRAG_FACTOR;
 	else if (!m_isGrounded) m_velocity *= AIR_DRAG_FACTOR;
 	else if (m_accel.x * m_velocity.x < 0) m_velocity *= TURN_DRAG;
 
-	m_isGrounded = false;	// every frame we are falling unless proved otherwise by floor collision
+	m_isGrounded = false;
 
-	if (m_sprintTimer > 0) m_sprintTimer -= dt;	// tick down the sprint cooldown
+	if (m_sprintTimer > 0) m_sprintTimer -= dt;
 
-	// handle animation
-	float speed = std::abs(m_velocity.x);	// sideways speed
+	float speed = std::abs(m_velocity.x);
 	if (speed < 1.0)
 		m_currAnim = &m_idle;
 	else if (speed > SPRINT_ANIM_THRESHOLD)
@@ -99,15 +95,12 @@ void Player::update(float dt)
 	else
 		m_currAnim = &m_walk;
 
-	// face direction
 	if (m_velocity.x > 0 && m_currAnim->getFlipped()
 		|| m_velocity.x < 0 && !m_currAnim->getFlipped())
-		// if we gotta flip, flip.
 		m_currAnim->setFlipped(!m_currAnim->getFlipped());	
 
 	move(m_velocity);
 
-	// keep within L/R bounds
 	if (getPosition().x < m_leftEdge)
 	{
 		setPosition({ m_leftEdge, getPosition().y });
@@ -121,17 +114,16 @@ void Player::update(float dt)
 	setTextureRect(m_currAnim->getCurrentFrame());
 }
 
-// only used on tiles for now.
-// collider confirmed to be tile with .isCollider=true
+// Tile colliders only (see GameObject::isCollider).
 void Player::collisionResponse(GameObject& collider)
 {
 	sf::FloatRect playerCollider = getCollisionBox();
 	sf::FloatRect wallBounds = collider.getCollisionBox();
 	auto overlap = playerCollider.findIntersection(wallBounds);
-	if (!overlap) return; // if there is no overlap, then leave.
+	if (!overlap) return;
 	if (overlap->size.x < overlap->size.y)
 	{
-		// taller than wide -> collision is side-on
+		// Narrow overlap on X → resolve horizontally (wall slide).
 		if (playerCollider.position.x < wallBounds.position.x)
 			move({ -overlap->size.x, 0 });
 		else
@@ -141,17 +133,15 @@ void Player::collisionResponse(GameObject& collider)
 	{
 		if (playerCollider.position.y < wallBounds.position.y)
 		{
-			// We are above the wall (Landing)
 			move({ 0, -overlap->size.y });
-			m_velocity.y = 0;       // Stop falling
-			m_isGrounded = true;    // Enable jumping
-			m_hasDoubleJumped = false;	// more jumping possible
+			m_velocity.y = 0;
+			m_isGrounded = true;
+			m_hasDoubleJumped = false;
 		}
 		else
 		{
-			// We hit the ceiling (Bonk)
 			move({ 0, overlap->size.y });
-			m_velocity.y = 0;       // Stop moving up
+			m_velocity.y = 0;
 		}
 	}
 }
