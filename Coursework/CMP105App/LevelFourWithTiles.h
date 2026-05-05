@@ -29,6 +29,7 @@ private:
     void resetPuzzle();
     void activateNearestPad();
     void updatePuzzleText();
+    void updateCamera();
 
     Player m_player;
     GameObject m_ground;
@@ -50,4 +51,5 @@ private:
     const sf::Vector2f m_spawn = { 80.f, 220.f };
     const float m_worldRight = 2880.f;
     const float m_padInteractDistance = 110.f;
+    const sf::Vector2f m_viewSize = { 432.f, 432.f };
 };

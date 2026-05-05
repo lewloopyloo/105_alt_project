@@ -1,4 +1,5 @@
 #include "LevelFourWithTiles.h"
+#include <algorithm>
 #include <iostream>
 
 LevelFourWithTiles::LevelFourWithTiles(sf::RenderWindow& window, Input& input, GameState& gameState, AudioManager& audio)
@@ -64,6 +65,7 @@ void LevelFourWithTiles::onBegin()
     resetPuzzle();
     m_player.setPosition(m_spawn);
     m_player.setVelocity({ 0.f, 0.f });
+    updateCamera();
 }
 
 void LevelFourWithTiles::onEnd()
@@ -110,7 +112,10 @@ void LevelFourWithTiles::update(float dt)
     if (m_showFeedback && m_feedbackClock.getElapsedTime().asSeconds() > 1.1f)
     {
         m_showFeedback = false;
+        updatePuzzleText();
     }
+
+    updateCamera();
 }
 
 void LevelFourWithTiles::render()
@@ -120,6 +125,14 @@ void LevelFourWithTiles::render()
     for (auto& pad : m_pads) m_window.draw(pad.tile);
     if (m_flagUnlocked) m_window.draw(m_flag);
     m_window.draw(m_player);
+
+    const auto viewCenter = m_window.getView().getCenter();
+    const auto viewSize = m_window.getView().getSize();
+    const sf::Vector2f topLeft = viewCenter - viewSize * 0.5f;
+    m_label.setPosition(topLeft + sf::Vector2f(16.f, 12.f));
+    m_sequenceText.setPosition(topLeft + sf::Vector2f(16.f, 46.f));
+    m_flagText.setPosition(topLeft + sf::Vector2f(16.f, 104.f));
+
     m_window.draw(m_label);
     m_window.draw(m_sequenceText);
     m_window.draw(m_flagText);
@@ -161,7 +174,7 @@ void LevelFourWithTiles::activateNearestPad()
     size_t pos = m_enteredSequence.size() - 1;
     if (m_enteredSequence[pos] != m_correctSequence[pos])
     {
-        m_feedbackMessage = "Wrong order! Sequence reset.";
+        m_feedbackMessage = "Wrong order. Reset.";
         m_feedbackColor = sf::Color(240, 90, 90);
         m_feedbackClock.restart();
         m_showFeedback = true;
@@ -175,7 +188,7 @@ void LevelFourWithTiles::activateNearestPad()
         m_feedbackClock.restart();
         m_showFeedback = true;
         m_flagText.setFillColor(sf::Color(100, 230, 120));
-        m_flagText.setString("Flag: UNLOCKED (press F at flag)");
+        m_flagText.setString("Flag: UNLOCKED - Press F at flag");
     }
 
     updatePuzzleText();
@@ -183,7 +196,7 @@ void LevelFourWithTiles::activateNearestPad()
 
 void LevelFourWithTiles::updatePuzzleText()
 {
-    std::string text = "Entered: ";
+    std::string text = "Sequence: ";
     if (m_enteredSequence.empty()) text += "(none)";
     else
     {
@@ -201,9 +214,22 @@ void LevelFourWithTiles::updatePuzzleText()
     }
     else
     {
-        text += "\nHint: BLUE -> RED -> YELLOW -> GREEN";
+        text += "\nHint: sky, ember, sun, leaf.";
     }
 
     m_sequenceText.setString(text);
     m_sequenceText.setFillColor(m_showFeedback ? m_feedbackColor : sf::Color::White);
+}
+
+void LevelFourWithTiles::updateCamera()
+{
+    auto view = m_window.getView();
+    const float halfW = m_viewSize.x * 0.5f;
+    const float halfH = m_viewSize.y * 0.5f;
+    sf::Vector2f playerCenter = m_player.getPosition() + m_player.getSize() * 0.5f;
+    playerCenter.x = std::clamp(playerCenter.x, halfW, m_worldRight - halfW);
+    playerCenter.y = halfH;
+    view.setSize(m_viewSize);
+    view.setCenter(playerCenter);
+    m_window.setView(view);
 }
