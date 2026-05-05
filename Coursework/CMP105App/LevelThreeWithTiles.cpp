@@ -184,11 +184,7 @@ LevelThreeWithTiles::LevelThreeWithTiles(sf::RenderWindow& window, Input& input,
     m_flag.setup();
 
     // Start the player on top of the first platform block in the route.
-    if (!m_platforms.empty())
-    {
-        const auto firstBlockPos = m_platforms.front().getPosition();
-        m_spawnPoint = { firstBlockPos.x + 10.f, firstBlockPos.y - m_player.getSize().y };
-    }
+    setSpawnFromFirstPlatform();
     m_player.setPosition(m_spawnPoint);
 }
 
@@ -198,7 +194,8 @@ void LevelThreeWithTiles::onBegin()
     m_isDead = false;
     m_player.setCanDoubleJump(false);
 
-    // place player at left spawn ledge
+    // Recompute and place player at the same first-platform spawn each level start.
+    setSpawnFromFirstPlatform();
     m_player.setPosition(m_spawnPoint);
 
     m_audio.playMusicbyName("bgm3");
@@ -228,6 +225,8 @@ void LevelThreeWithTiles::handleInput(float dt)
     {
         if (m_input.isPressed(sf::Keyboard::Scancode::R))
         {
+            // Respawn on the exact same tile used at level start.
+            setSpawnFromFirstPlatform();
             m_player.setPosition(m_spawnPoint);
             m_player.setVelocity({ 0.f, 0.f });
             m_player.setCanDoubleJump(false);
@@ -361,5 +360,14 @@ void LevelThreeWithTiles::checkAndSetMessages()
         m_alertText.setCharacterSize(20);
         m_alertText.setPosition({30.f, 10.f});
         m_alertText.setString(m_promptMessages[0]);
+    }
+}
+
+void LevelThreeWithTiles::setSpawnFromFirstPlatform()
+{
+    if (!m_platforms.empty())
+    {
+        const auto firstBlockPos = m_platforms.front().getPosition();
+        m_spawnPoint = { firstBlockPos.x + 10.f, firstBlockPos.y - m_player.getSize().y };
     }
 }

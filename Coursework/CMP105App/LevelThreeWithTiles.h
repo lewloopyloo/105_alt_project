@@ -24,6 +24,7 @@ public:
 private:
     void updateCameraAndBackground();
     void checkAndSetMessages();
+    void setSpawnFromFirstPlatform();
 
     TileMap m_tilemap;
     TileMap m_bgtilemap;
