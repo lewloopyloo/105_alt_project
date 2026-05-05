@@ -314,12 +314,16 @@ void LevelThreeWithTiles::render()
 
     sf::RectangleShape darkRect;
     darkRect.setSize({ static_cast<float>(m_window.getSize().x), static_cast<float>(m_window.getSize().y) });
-    darkRect.setFillColor(sf::Color(0, 0, 0, 210));
+    darkRect.setFillColor(sf::Color(0, 0, 0, 245));
     darkRect.setPosition({0.f, 0.f});
     m_darkTexture.draw(darkRect);
     m_darkTexture.display();
 
     sf::Sprite darkSprite(m_darkTexture.getTexture());
+    // Keep overlay aligned to camera so darkness follows across the whole map.
+    auto viewCenter = m_window.getView().getCenter();
+    auto viewSize = m_window.getView().getSize();
+    darkSprite.setPosition(viewCenter - viewSize * 0.5f);
     m_window.draw(darkSprite);
 
     // Death overlay drawn on top when player is dead
