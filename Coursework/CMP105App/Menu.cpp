@@ -1,4 +1,5 @@
 #include "Menu.h"
+#include <iostream>
 #include <string>
 
 Menu::Menu(sf::RenderWindow& hwnd, Input& in, GameState& gs, AudioManager& aud) :
@@ -80,6 +81,28 @@ Menu::Menu(sf::RenderWindow& hwnd, Input& in, GameState& gs, AudioManager& aud) 
 	m_characterHint.setFillColor(sf::Color(230, 230, 230));
 	m_characterHint.setPosition({ centreX, startY + mainBtnHeight * 2.f + mainBtnSpacing + 44.f });
 	m_characterHint.setString("Left/Right to change character");
+
+	// Character preview: idle loop uses same 24x24 frames as Player
+	static const char* previewPaths[] = { "gfx/dino1.png", "gfx/dino2.png", "gfx/dino3.png" };
+	for (int i = 0; i < 3; ++i)
+	{
+		if (!m_previewTextures[i].loadFromFile(previewPaths[i]))
+		{
+			std::cerr << "menu preview missing: " << previewPaths[i] << "\n";
+			if (!m_previewTextures[i].loadFromFile(previewPaths[0]))
+				std::cerr << "menu preview fallback failed\n";
+		}
+		for (int f = 0; f < 4; ++f)
+			m_previewIdleAnims[i].addFrame(sf::IntRect({ f * 24, 0 }, { 24, 24 }));
+		m_previewIdleAnims[i].setFrameSpeed(1.f / 4.f);
+	}
+	const float previewSize = 96.f;
+	m_characterPreview.setSize({ previewSize, previewSize });
+	m_characterPreview.setPosition({
+		(windowSize.x - previewSize) * 0.5f,
+		startY - 104.f });
+	m_characterPreview.setTexture(&m_previewTextures[0]);
+	m_characterPreview.setTextureRect(m_previewIdleAnims[0].getCurrentFrame());
 
 	// --- Setup overlay (popup) that contains the three level choices ---
 	// fullscreen dim to darken background when overlay active
@@ -274,6 +297,7 @@ void Menu::render()
 	else
 	{
 		// main menu: show Level Select and Exit (now centred)
+		m_window.draw(m_characterPreview);
 		m_window.draw(m_levelSelectButton);
 		m_window.draw(m_levelSelectLabel);
 		m_window.draw(m_characterLabel);
@@ -293,6 +317,18 @@ void Menu::update(float dt)
 	if (m_characterIndex == 1) characterName = "Ninja";
 	if (m_characterIndex == 2) characterName = "Robot";
 	m_characterLabel.setString(std::string("Character: ") + characterName);
+
+	if (!m_showLevelMenu)
+	{
+		if (m_characterIndex != m_lastPreviewCharacterIndex)
+		{
+			m_previewIdleAnims[m_characterIndex].reset();
+			m_lastPreviewCharacterIndex = m_characterIndex;
+		}
+		m_previewIdleAnims[m_characterIndex].animate(dt);
+		m_characterPreview.setTexture(&m_previewTextures[m_characterIndex]);
+		m_characterPreview.setTextureRect(m_previewIdleAnims[m_characterIndex].getCurrentFrame());
+	}
 
 	if (m_showLevelMenu)
 	{
@@ -340,6 +376,7 @@ void Menu::onBegin()
 	if (current == CharacterId::DINO) m_characterIndex = 0;
 	else if (current == CharacterId::NINJA) m_characterIndex = 1;
 	else m_characterIndex = 2;
+	m_lastPreviewCharacterIndex = -1;
 	auto view = m_window.getDefaultView();
 	view.setCenter({ 216, 216 });
 	m_window.setView(view);

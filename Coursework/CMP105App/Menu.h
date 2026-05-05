@@ -1,6 +1,8 @@
 #pragma once
 #include "Scene.h"
 #include "Framework/Collision.h"
+#include "Framework/Animation.h"
+#include <array>
 class Menu :
     public Scene
 {
@@ -47,6 +49,12 @@ private:
 
     GameObject m_titleImage;
     sf::Texture m_titleSplash;
+
+    // Character preview (idle animation, same frames as Player)
+    GameObject m_characterPreview;
+    std::array<sf::Texture, 3> m_previewTextures;
+    std::array<Animation, 3> m_previewIdleAnims;
+    int m_lastPreviewCharacterIndex = -1;
 
     // state
     bool m_showLevelMenu = false;
