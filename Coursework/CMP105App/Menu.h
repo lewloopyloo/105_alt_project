@@ -46,6 +46,10 @@ private:
     GameObject m_titleImage;
     sf::Texture m_titleSplash;
 
+    GameObject m_dinoLogo;
+    sf::Texture m_dinoLogoTexture;
+    bool m_hasDinoLogo = false;
+
     // state
     bool m_showLevelMenu = false;
 

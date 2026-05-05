@@ -21,6 +21,18 @@ Menu::Menu(sf::RenderWindow& hwnd, Input& in, GameState& gs, AudioManager& aud) 
 	auto ws = m_window.getSize();
 	sf::Vector2f windowSize{ static_cast<float>(ws.x), static_cast<float>(ws.y) };
 
+	if (!m_dinoLogoTexture.loadFromFile("gfx/dino1.png"))
+		std::cerr << "no dino texture for menu logo\n";
+	else
+	{
+		m_hasDinoLogo = true;
+		m_dinoLogo.setTexture(&m_dinoLogoTexture);
+		m_dinoLogo.setTextureRect({ { 0, 0 }, { 24, 24 } });
+		const float logoSize = 88.f;
+		m_dinoLogo.setSize({ logoSize, logoSize });
+		m_dinoLogo.setPosition({ (windowSize.x - logoSize) * 0.5f, 24.f });
+	}
+
 	const float mainBtnWidth = 216.f;
 	const float mainBtnHeight = 80.f;
 	const float mainBtnSpacing = 16.f;
@@ -201,6 +213,8 @@ void Menu::render()
 {
 	beginDraw();
 	m_window.draw(m_titleImage);
+	if (m_hasDinoLogo)
+		m_window.draw(m_dinoLogo);
 
 	if (m_showLevelMenu)
 	{
