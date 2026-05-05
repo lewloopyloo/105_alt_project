@@ -13,8 +13,6 @@ void LevelCompleteOverlay::centerLabelOnButton(sf::Text& label, const GameObject
 void LevelCompleteOverlay::configure(sf::Font& font, float windowW, float windowH, State nextLevelState, bool hasNextLevel)
 {
     m_font = &font;
-    m_windowW = windowW;
-    m_windowH = windowH;
     m_hasNext = hasNextLevel;
     m_nextState = nextLevelState;
 
@@ -50,7 +48,7 @@ void LevelCompleteOverlay::configure(sf::Font& font, float windowW, float window
     }
 
     m_subtitle.setFont(font);
-    m_subtitle.setString("Choose where to go next.");
+    m_subtitle.setString(hasNextLevel ? "Choose where to go next." : "You've cleared every job site.");
     m_subtitle.setCharacterSize(14);
     m_subtitle.setFillColor(sf::Color(190, 210, 220));
     m_subtitle.setOutlineColor(sf::Color(12, 16, 26));

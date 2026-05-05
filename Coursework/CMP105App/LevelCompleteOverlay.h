@@ -19,8 +19,6 @@ private:
     static void centerLabelOnButton(sf::Text& label, const GameObject& button);
 
     sf::Font* m_font = nullptr;
-    float m_windowW = 432.f;
-    float m_windowH = 432.f;
     bool m_hasNext = true;
     State m_nextState = State::LEVELTWO;
 
