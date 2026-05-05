@@ -368,6 +368,14 @@ void LevelThreeWithTiles::setSpawnFromFirstPlatform()
     if (!m_platforms.empty())
     {
         const auto firstBlockPos = m_platforms.front().getPosition();
-        m_spawnPoint = { firstBlockPos.x + 10.f, firstBlockPos.y - m_player.getSize().y };
+        const float centeredX = firstBlockPos.x + (m_platforms.front().getSize().x - m_player.getSize().x) * 0.5f;
+        // Small overlap helps guarantee collision resolution on the next physics update.
+        const float stableY = firstBlockPos.y - m_player.getSize().y + 1.f;
+        m_spawnPoint = { centeredX, stableY };
+    }
+    else
+    {
+        // Safety fallback if platforms are unavailable for any reason.
+        m_spawnPoint = { 2.f * 72.f + 8.f, 5.f * 72.f };
     }
 }
