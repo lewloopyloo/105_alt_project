@@ -41,6 +41,7 @@ private:
     sf::Texture m_tileTexture;
 
     std::vector<GameObject> m_platforms; // explicit platforms for parkour
+    sf::Vector2f m_spawnPoint = { 2.f * 72.f, 5.f * 72.f };
 
     sf::Vector2f m_wallPos = { 11 * 72, 5 * 72 };
 

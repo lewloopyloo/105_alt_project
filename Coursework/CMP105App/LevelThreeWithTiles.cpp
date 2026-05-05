@@ -131,42 +131,68 @@ LevelThreeWithTiles::LevelThreeWithTiles(sf::RenderWindow& window, Input& input,
         obj.setTextureRect({ { tileCol * 19, tileRow * 19 }, { 18, 18 } });
     };
 
-    // Build stairs to replace the snow section (tile-sized steps)
+    // Build a layered platform route inspired by the reference image.
+    // The layout is intentionally staggered to create more readable jumps and vertical progression.
     m_platforms.clear();
     const float tileWorldSize = 72.f; // each tile is rendered at 72x72
-    int startCol = 12;
-    int steps = 6; // number of steps
-    for (int i = 0; i < steps; ++i)
+    struct PlatformChunk
     {
-        int col = startCol + i;
-        int row = 6 - i; // step upwards from row 6 towards row 1
-        if (row < 1) row = 1;
-        GameObject step;
-        step.setSize({ tileWorldSize, tileWorldSize });
-        step.setPosition({ static_cast<float>(col) * tileWorldSize, static_cast<float>(row) * tileWorldSize });
-        step.setCollisionBox({ {0,0}, step.getSize() });
-        step.setCollider(true);
-        // use a ground-like tile piece
-        applyTilePiece(step, 1, 6);
-        m_platforms.push_back(step);
+        int col;
+        int row;
+        int width;
+    };
+
+    const std::vector<PlatformChunk> chunks =
+    {
+        // Left side start and first ramp section
+        {2, 6, 3},
+        {5, 5, 3},
+        {8, 5, 2},
+
+        // Mid-level floating islands
+        {12, 6, 2},
+        {14, 5, 3},
+        {18, 4, 4},
+        {23, 5, 2},
+        {25, 4, 2},
+
+        // Small stepping stones over the central pit
+        {16, 7, 1},
+        {19, 6, 1},
+        {22, 5, 1},
+
+        // Right side cliff and upper route
+        {28, 6, 3},
+        {31, 5, 4},
+        {34, 3, 3}
+    };
+
+    for (const auto& chunk : chunks)
+    {
+        for (int i = 0; i < chunk.width; ++i)
+        {
+            GameObject platformTile;
+            platformTile.setSize({ tileWorldSize, tileWorldSize });
+            platformTile.setPosition({
+                static_cast<float>(chunk.col + i) * tileWorldSize,
+                static_cast<float>(chunk.row) * tileWorldSize
+                });
+            platformTile.setCollisionBox({ {0,0}, platformTile.getSize() });
+            platformTile.setCollider(true);
+            applyTilePiece(platformTile, 1, 6); // ground-like piece
+            m_platforms.push_back(platformTile);
+        }
     }
 
-    // place flag on the tilemap where other levels place it
+    // Place the exit higher and to the right for a stronger "climb then finish" flow.
     m_flag.setSize({72, 72});
     m_flag.setTexture(&m_tileTexture);
-    m_flag.setPosition({ 36 * 72.f, 5 * 72.f });
+    m_flag.setPosition({ 36 * 72.f, 2 * 72.f });
     m_flag.setup();
 
-    // Set player start to be on the first stair (if present) or safe fallback
-    if (!m_platforms.empty())
-    {
-        auto& first = m_platforms.front();
-        m_player.setPosition({ first.getPosition().x + 10.f, first.getPosition().y - m_player.getSize().y });
-    }
-    else
-    {
-        m_player.setPosition({ 100.f, 100.f });
-    }
+    // Start the player at the left-bottom ledge.
+    m_spawnPoint = { 2.f * tileWorldSize + 10.f, 5.f * tileWorldSize };
+    m_player.setPosition(m_spawnPoint);
 }
 
 void LevelThreeWithTiles::onBegin()
@@ -175,16 +201,8 @@ void LevelThreeWithTiles::onBegin()
     m_isDead = false;
     m_player.setCanDoubleJump(false);
 
-    // place player at first stair
-    if (!m_platforms.empty())
-    {
-        auto& first = m_platforms.front();
-        m_player.setPosition({ first.getPosition().x + 10.f, first.getPosition().y - m_player.getSize().y });
-    }
-    else
-    {
-        m_player.setPosition({ 100.f, 100.f });
-    }
+    // place player at left spawn ledge
+    m_player.setPosition(m_spawnPoint);
 
     m_audio.playMusicbyName("bgm3");
 }
@@ -213,18 +231,8 @@ void LevelThreeWithTiles::handleInput(float dt)
     {
         if (m_input.isPressed(sf::Keyboard::Scancode::R))
         {
-            // Respawn on the first stair if available
-            if (!m_platforms.empty())
-            {
-                auto& first = m_platforms.front();
-                m_player.setPosition({ first.getPosition().x + 10.f, first.getPosition().y - m_player.getSize().y });
-                m_player.setVelocity({ 0.f, 0.f });
-            }
-            else
-            {
-                m_player.setPosition({ 100.f, 100.f });
-                m_player.setVelocity({ 0.f, 0.f });
-            }
+            m_player.setPosition(m_spawnPoint);
+            m_player.setVelocity({ 0.f, 0.f });
             m_player.setCanDoubleJump(false);
             m_isDead = false;
             updateCameraAndBackground();
