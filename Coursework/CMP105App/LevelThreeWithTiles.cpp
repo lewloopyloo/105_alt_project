@@ -41,7 +41,7 @@ LevelThreeWithTiles::LevelThreeWithTiles(sf::RenderWindow& window, Input& input,
     // Create a tileMap similar to Level 1/2 so visuals match
     std::vector<int> tileMap = {
         b  , b  , b  , b  , b  , b  , b  , b  , b  , b  , b  , b  , b  , b, b, b, b  , b  , b  , b  , b  , b  , b, b, b, b  , b  , b  , b  , b  , b  , b  , b  , b  , b  , b  , b  , b  , b  , b  ,
-        b  , b  , b  , b  , b  , b  , b  , b  , b  , b  , b  , b  , b  , 145, b  , b  , 145, b  , b  , b  , b  , b  , b, b, b, b, b, b, b, b, b, b  , b  , b  , b  , b  , b  , b  , b  , b  ,
+        b  , b  , b  , b  , b  , b  , b  , b  , b  , b  , b  , b  , b  , b  , b  , b  , b  , b  , b  , b  , b  , b  , b, b, b, b, b, b, b, b, b, b  , b  , b  , b  , b  , b  , b  , b  , b  ,
         b  , b  , b  , b  , b  , b  , b  , b  , b  , b  , b  , b  , b  , b  , b  , b  , b  , b  , b  , b  , b  , b  , b, b, b, b, b, b, b, b, b, b  , b  , b  , b  , b  , b  , b  , b  , b  ,
         b  , b  , b  , b  , b  , b  , b  , b  , b  , b  , b  , b  , b  , b  , b  , b  , b  , b  , b  , b  , b  , b  , b, b, b, b, b, b, b, b, b, b  , b  , b  , b  , b  , b  , b  , b  , b  ,
         b  , b  , b  , b  , b  , b  , b  , b  , b  , b  , b  , b  , b  , b  , b  , b  , b  , b  , b  , b  , b  , b  , b, b, b, b, b, b, b, b, b, b  , b  , b  , b  , b  , b  , b  , b  , b  ,
@@ -144,26 +144,21 @@ LevelThreeWithTiles::LevelThreeWithTiles(sf::RenderWindow& window, Input& input,
 
     const std::vector<PlatformChunk> chunks =
     {
-        // Left side start and first ramp section
+        // Left side start
         {2, 6, 3},
-        {5, 5, 3},
-        {8, 5, 2},
+        {6, 5, 2},
 
-        // Mid-level floating islands
-        {12, 6, 2},
-        {14, 5, 3},
-        {23, 5, 2},
-        {25, 4, 2},
+        // Mid route: fewer, narrower islands for harder jumps
+        {11, 6, 1},
+        {14, 5, 1},
+        {17, 4, 1},
+        {20, 5, 1},
+        {23, 4, 1},
 
-        // Small stepping stones over the central pit
-        {16, 7, 1},
-        {19, 6, 1},
-        {22, 5, 1},
-
-        // Right side cliff and upper route
-        {28, 6, 3},
-        {31, 5, 4},
-        {34, 3, 3}
+        // Right side finish route
+        {27, 6, 2},
+        {31, 5, 2},
+        {35, 3, 2}
     };
 
     for (const auto& chunk : chunks)
