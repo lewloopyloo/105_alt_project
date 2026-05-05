@@ -309,7 +309,7 @@ void LevelThreeWithTiles::render()
     m_window.draw(m_flag);
     m_window.draw(m_alertText);
 
-    // Build and draw darkness overlay for full-cave darkness.
+    // Build and draw darkness overlay for cave darkness.
     m_darkTexture.clear(sf::Color::Transparent);
 
     sf::RectangleShape darkRect;
@@ -317,12 +317,19 @@ void LevelThreeWithTiles::render()
     darkRect.setFillColor(sf::Color(0, 0, 0, 245));
     darkRect.setPosition({0.f, 0.f});
     m_darkTexture.draw(darkRect);
+
+    // Carve out a small light circle around the player.
+    auto viewCenter = m_window.getView().getCenter();
+    auto viewSize = m_window.getView().getSize();
+    sf::Vector2f topLeft = viewCenter - viewSize * 0.5f;
+    sf::Vector2f playerCenter = m_player.getPosition() + m_player.getSize() * 0.5f;
+    sf::Vector2f lightPos = playerCenter - topLeft;
+    m_lightMask.setPosition(lightPos);
+    m_darkTexture.draw(m_lightMask, sf::RenderStates{ sf::BlendNone });
     m_darkTexture.display();
 
     sf::Sprite darkSprite(m_darkTexture.getTexture());
     // Keep overlay aligned to camera so darkness follows across the whole map.
-    auto viewCenter = m_window.getView().getCenter();
-    auto viewSize = m_window.getView().getSize();
     darkSprite.setPosition(viewCenter - viewSize * 0.5f);
     m_window.draw(darkSprite);
 
