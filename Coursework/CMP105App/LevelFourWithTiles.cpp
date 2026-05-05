@@ -15,6 +15,26 @@ LevelFourWithTiles::LevelFourWithTiles(sf::RenderWindow& window, Input& input, G
     m_ground.setCollider(true);
     m_ground.setFillColor(sf::Color(60, 120, 60));
 
+    // Puzzle chamber walls.
+    m_leftWall.setSize({ 28.f, 240.f });
+    m_leftWall.setPosition({ 190.f, 120.f });
+    m_leftWall.setCollisionBox({ {0.f, 0.f}, m_leftWall.getSize() });
+    m_leftWall.setCollider(true);
+    m_leftWall.setFillColor(sf::Color(95, 95, 110));
+
+    m_roof.setSize({ 520.f, 28.f });
+    m_roof.setPosition({ 190.f, 120.f });
+    m_roof.setCollisionBox({ {0.f, 0.f}, m_roof.getSize() });
+    m_roof.setCollider(true);
+    m_roof.setFillColor(sf::Color(95, 95, 110));
+
+    // Door blocks access to the flag corridor until puzzle is solved.
+    m_door.setSize({ 28.f, 180.f });
+    m_door.setPosition({ 690.f, 180.f });
+    m_door.setCollisionBox({ {0.f, 0.f}, m_door.getSize() });
+    m_door.setCollider(true);
+    m_door.setFillColor(sf::Color(140, 80, 40));
+
     if (!m_tileTexture.loadFromFile("gfx/tilemap.png")) std::cerr << "failed to find tile images";
     m_flag.setTexture(&m_tileTexture);
     m_flag.setSize({ 72.f, 72.f });
@@ -46,7 +66,7 @@ LevelFourWithTiles::LevelFourWithTiles(sf::RenderWindow& window, Input& input, G
     if (!m_font.openFromFile("font/bitcount.ttf")) std::cerr << "no font found";
     m_label.setCharacterSize(20);
     m_label.setFillColor(sf::Color::White);
-    m_label.setString("Level 4 - Color Puzzle\nPress F near a color tile");
+    m_label.setString("Level 4 - Color Puzzle Chamber\nPress F near a color tile");
     m_label.setPosition({ 20.f, 20.f });
 
     m_sequenceText.setCharacterSize(18);
@@ -79,7 +99,7 @@ void LevelFourWithTiles::handleInput(float dt)
 
     if (m_input.isPressed(sf::Keyboard::Scancode::F))
     {
-        if (m_flagUnlocked && (m_flag.getPosition() - m_player.getPosition()).length() < 100.f)
+        if (m_doorOpen && (m_flag.getPosition() - m_player.getPosition()).length() < 100.f)
         {
             m_gameState.setCurrentState(State::MENU);
             return;
@@ -102,6 +122,18 @@ void LevelFourWithTiles::update(float dt)
     {
         m_player.collisionResponse(m_ground);
     }
+    if (Collision::checkBoundingBox(m_player, m_leftWall))
+    {
+        m_player.collisionResponse(m_leftWall);
+    }
+    if (Collision::checkBoundingBox(m_player, m_roof))
+    {
+        m_player.collisionResponse(m_roof);
+    }
+    if (!m_doorOpen && Collision::checkBoundingBox(m_player, m_door))
+    {
+        m_player.collisionResponse(m_door);
+    }
 
     if (m_player.getPosition().y > 1200.f)
     {
@@ -122,8 +154,11 @@ void LevelFourWithTiles::render()
 {
     beginDraw();
     m_window.draw(m_ground);
+    m_window.draw(m_leftWall);
+    m_window.draw(m_roof);
+    if (!m_doorOpen) m_window.draw(m_door);
     for (auto& pad : m_pads) m_window.draw(pad.tile);
-    if (m_flagUnlocked) m_window.draw(m_flag);
+    m_window.draw(m_flag);
     m_window.draw(m_player);
 
     const auto viewCenter = m_window.getView().getCenter();
@@ -150,11 +185,13 @@ void LevelFourWithTiles::render()
 void LevelFourWithTiles::resetPuzzle()
 {
     m_enteredSequence.clear();
-    m_flagUnlocked = false;
+    m_doorOpen = false;
     m_showFeedback = false;
     m_feedbackMessage.clear();
     m_flagText.setFillColor(sf::Color(230, 80, 80));
-    m_flagText.setString("Flag: LOCKED");
+    m_flagText.setString("Door: LOCKED");
+    m_door.setCollider(true);
+    m_door.setFillColor(sf::Color(140, 80, 40));
     updatePuzzleText();
 }
 
@@ -190,13 +227,15 @@ void LevelFourWithTiles::activateNearestPad()
     }
     else if (m_enteredSequence.size() == m_correctSequence.size())
     {
-        m_flagUnlocked = true;
-        m_feedbackMessage = "Correct sequence! Flag unlocked.";
+        m_doorOpen = true;
+        m_feedbackMessage = "Correct sequence! Door opened.";
         m_feedbackColor = sf::Color(110, 240, 120);
         m_feedbackClock.restart();
         m_showFeedback = true;
         m_flagText.setFillColor(sf::Color(100, 230, 120));
-        m_flagText.setString("Flag: UNLOCKED - Press F at flag");
+        m_flagText.setString("Door: OPEN - Reach flag and press F");
+        m_door.setCollider(false);
+        m_door.setFillColor(sf::Color(100, 190, 120, 120));
     }
 
     updatePuzzleText();

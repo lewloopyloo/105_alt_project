@@ -33,12 +33,15 @@ private:
 
     Player m_player;
     GameObject m_ground;
+    GameObject m_leftWall;
+    GameObject m_roof;
+    GameObject m_door;
     Flag m_flag;
     sf::Texture m_tileTexture;
     std::vector<PuzzlePad> m_pads;
     std::vector<int> m_enteredSequence;
     std::array<int, 4> m_correctSequence = { 1, 0, 3, 2 }; // blue, red, yellow, green
-    bool m_flagUnlocked = false;
+    bool m_doorOpen = false;
     bool m_showFeedback = false;
     sf::Clock m_feedbackClock;
     sf::Color m_feedbackColor = sf::Color::White;
