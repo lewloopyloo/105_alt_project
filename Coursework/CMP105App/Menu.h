@@ -45,13 +45,9 @@ private:
     sf::Text m_overlayTitle;
 
     sf::VertexArray m_backdropGradient;
-    sf::RectangleShape m_topShade;
-    sf::RectangleShape m_bottomShade;
+    sf::RectangleShape m_menuCard;
     sf::Text m_mainTitle;
     sf::Text m_tagline;
-
-    GameObject m_titleImage;
-    sf::Texture m_titleSplash;
 
     GameObject m_dinoLogo;
     sf::Texture m_dinoLogoTexture;
@@ -60,6 +56,6 @@ private:
     // state
     bool m_showLevelMenu = false;
 
-    sf::Color m_defaultButtonColour = sf::Color(228, 242, 232, 215);
-    sf::Color m_hoverButtonColour = sf::Color(195, 235, 208, 245);
+    sf::Color m_defaultButtonColour = sf::Color(245, 252, 248, 238);
+    sf::Color m_hoverButtonColour = sf::Color(210, 242, 222, 255);
 };
