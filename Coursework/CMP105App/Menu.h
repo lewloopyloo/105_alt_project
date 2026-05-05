@@ -19,6 +19,7 @@ private:
     GameObject m_playButton;
     GameObject m_play2Button;
     GameObject m_play3Button; // level 3 button
+    GameObject m_play4Button; // level 4 button
 
     // Main menu buttons
     GameObject m_levelSelectButton; // single Level Select button that opens overlay
@@ -33,6 +34,7 @@ private:
     sf::Text m_playButtonLabel;
     sf::Text m_playButton2Label;
     sf::Text m_playButton3Label; // label for level 3
+    sf::Text m_playButton4Label; // label for level 4
     sf::Text m_exitButtonLabel;        // exit label
 
     // label for the single Level Select button

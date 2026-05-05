@@ -5,6 +5,7 @@ Menu::Menu(sf::RenderWindow& hwnd, Input& in, GameState& gs, AudioManager& aud) 
 	m_playButtonLabel(m_font),
 	m_playButton2Label(m_font),
 	m_playButton3Label(m_font),
+	m_playButton4Label(m_font),
 	m_exitButtonLabel(m_font),
 	m_levelSelectLabel(m_font),
 	m_overlayTitle(m_font)
@@ -76,7 +77,7 @@ Menu::Menu(sf::RenderWindow& hwnd, Input& in, GameState& gs, AudioManager& aud) 
 	m_overlayDim.setFillColor(sf::Color(0, 0, 0, 140)); // softer dim
 
 	// frame (slightly larger than panel) to act as border
-	const sf::Vector2f panelSize{ 340.f, 320.f };
+	const sf::Vector2f panelSize{ 340.f, 400.f };
 	const float framePadding = 8.f;
 	sf::Vector2f frameSize = { panelSize.x + framePadding * 2.f, panelSize.y + framePadding * 2.f };
 	sf::Vector2f framePos = { (windowSize.x - frameSize.x) / 2.f, (windowSize.y - frameSize.y) / 2.f };
@@ -139,6 +140,16 @@ Menu::Menu(sf::RenderWindow& hwnd, Input& in, GameState& gs, AudioManager& aud) 
 	m_playButton3Label.setPosition({ btnX + btnWidth / 2.f - 30.f, btnYStart + btnSpacing * 2.f + btnHeight / 2.f - 12.f });
 	m_playButton3Label.setString("Level 3");
 	m_playButton3Label.setFillColor(sf::Color::Black);
+
+	m_play4Button.setSize({ btnWidth, btnHeight });           // Level 4 inside overlay
+	m_play4Button.setPosition({ btnX, btnYStart + btnSpacing * 3.f });
+	m_play4Button.setCollisionBox({ {0,0}, m_play4Button.getSize() });
+	m_play4Button.setFillColor(m_defaultButtonColour);
+
+	m_playButton4Label.setCharacterSize(22);
+	m_playButton4Label.setPosition({ btnX + btnWidth / 2.f - 30.f, btnYStart + btnSpacing * 3.f + btnHeight / 2.f - 12.f });
+	m_playButton4Label.setString("Level 4");
+	m_playButton4Label.setFillColor(sf::Color::Black);
 }
 
 void Menu::handleInput(float dt)
@@ -169,6 +180,14 @@ void Menu::handleInput(float dt)
 			Collision::checkBoundingBox(m_play3Button, mousePos))
 		{
 			m_gameState.setCurrentState(State::LEVELTHREE);
+			m_showLevelMenu = false;
+			return;
+		}
+		// Level 4
+		if (m_input.isLeftMousePressed() &&
+			Collision::checkBoundingBox(m_play4Button, mousePos))
+		{
+			m_gameState.setCurrentState(State::LEVELFOUR);
 			m_showLevelMenu = false;
 			return;
 		}
@@ -222,6 +241,9 @@ void Menu::render()
 
 		m_window.draw(m_play3Button);
 		m_window.draw(m_playButton3Label);
+
+		m_window.draw(m_play4Button);
+		m_window.draw(m_playButton4Label);
 	}
 	else
 	{
@@ -257,6 +279,11 @@ void Menu::update(float dt)
 			m_play3Button.setFillColor(m_hoverButtonColour);
 		else
 			m_play3Button.setFillColor(m_defaultButtonColour);
+
+		if (Collision::checkBoundingBox(m_play4Button, mousePos))
+			m_play4Button.setFillColor(m_hoverButtonColour);
+		else
+			m_play4Button.setFillColor(m_defaultButtonColour);
 	}
 	else
 	{

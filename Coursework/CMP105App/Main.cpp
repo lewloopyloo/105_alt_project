@@ -14,6 +14,7 @@
 #include "LevelWithTiles.h"
 #include "LevelTwoWithTiles.h"
 #include "LevelThreeWithTiles.h" // new level 3 include
+#include "LevelFourWithTiles.h"
 
 #ifndef SFML_VERSION_MAJOR
 	#error "SFML 3 is required for this framework."
@@ -95,6 +96,7 @@ int main()
 	LevelWithTiles tile_level(window, input, gameState, audioManager);
 	LevelTwoWithTiles tile_level_two(window, input, gameState, audioManager);
 	LevelThreeWithTiles tile_level_three(window, input, gameState, audioManager); // new level 3 instance
+	LevelFourWithTiles tile_level_four(window, input, gameState, audioManager);
 	Scene* currentScene = &menu;
 
 	// Initialise objects for delta time
@@ -109,7 +111,8 @@ int main()
 		{State::MENU, &menu},
 		{State::LEVELONE, &tile_level},
 		{State::LEVELTWO, &tile_level_two},
-		{State::LEVELTHREE, &tile_level_three} // register level three
+		{State::LEVELTHREE, &tile_level_three}, // register level three
+		{State::LEVELFOUR, &tile_level_four}
 	};
 	
 	// Game Loop
