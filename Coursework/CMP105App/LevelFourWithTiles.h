@@ -2,6 +2,10 @@
 #include "Scene.h"
 #include "Framework/Collision.h"
 #include "Player.h"
+#include "Flag.h"
+#include <array>
+#include <string>
+#include <vector>
 
 class LevelFourWithTiles : public Scene
 {
@@ -15,11 +19,35 @@ public:
     void onEnd() override;
 
 private:
+    struct PuzzlePad
+    {
+        GameObject tile;
+        sf::Color activeColor;
+        std::string name;
+    };
+
+    void resetPuzzle();
+    void activateNearestPad();
+    void updatePuzzleText();
+
     Player m_player;
     GameObject m_ground;
+    Flag m_flag;
+    sf::Texture m_tileTexture;
+    std::vector<PuzzlePad> m_pads;
+    std::vector<int> m_enteredSequence;
+    std::array<int, 4> m_correctSequence = { 1, 0, 3, 2 }; // blue, red, yellow, green
+    bool m_flagUnlocked = false;
+    bool m_showFeedback = false;
+    sf::Clock m_feedbackClock;
+    sf::Color m_feedbackColor = sf::Color::White;
+    std::string m_feedbackMessage;
     sf::Font m_font;
     sf::Text m_label;
+    sf::Text m_sequenceText;
+    sf::Text m_flagText;
 
     const sf::Vector2f m_spawn = { 80.f, 220.f };
     const float m_worldRight = 2880.f;
+    const float m_padInteractDistance = 110.f;
 };
