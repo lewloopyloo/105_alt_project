@@ -51,7 +51,7 @@ private:
     sf::Text m_sequenceText;
     sf::Text m_flagText;
 
-    const sf::Vector2f m_spawn = { 80.f, 220.f };
+    const sf::Vector2f m_spawn = { 240.f, 220.f };
     const float m_worldRight = 2880.f;
     const float m_padInteractDistance = 110.f;
     const sf::Vector2f m_viewSize = { 432.f, 432.f };
