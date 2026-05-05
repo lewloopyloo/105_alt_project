@@ -1,8 +1,6 @@
 #pragma once
 #include "Scene.h"
 #include "Framework/Collision.h"
-#include "Framework/Animation.h"
-#include <array>
 class Menu :
     public Scene
 {
@@ -41,8 +39,6 @@ private:
 
     // label for the single Level Select button
     sf::Text m_levelSelectLabel;
-    sf::Text m_characterLabel;
-    sf::Text m_characterHint;
 
     // overlay title
     sf::Text m_overlayTitle;
@@ -50,17 +46,9 @@ private:
     GameObject m_titleImage;
     sf::Texture m_titleSplash;
 
-    // Character preview (idle animation, same frames as Player)
-    GameObject m_characterPreview;
-    std::array<sf::Texture, 3> m_previewTextures;
-    std::array<Animation, 3> m_previewIdleAnims;
-    int m_lastPreviewCharacterIndex = -1;
-
     // state
     bool m_showLevelMenu = false;
-    int m_characterIndex = 0;
 
     sf::Color m_defaultButtonColour = sf::Color(100, 250, 100, 50);
     sf::Color m_hoverButtonColour = sf::Color(80, 230, 80, 150);
 };
-

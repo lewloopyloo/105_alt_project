@@ -192,7 +192,6 @@ void LevelThreeWithTiles::onBegin()
 {
     // ensure player does NOT carry double-jump into level 3
     m_isDead = false;
-    m_player.setCharacter(m_gameState.getSelectedCharacter());
     m_player.setCanDoubleJump(false);
 
     // Recompute and place player at the same first-platform spawn each level start.

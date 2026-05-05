@@ -83,7 +83,6 @@ LevelFourWithTiles::LevelFourWithTiles(sf::RenderWindow& window, Input& input, G
 void LevelFourWithTiles::onBegin()
 {
     resetPuzzle();
-    m_player.setCharacter(m_gameState.getSelectedCharacter());
     m_player.setPosition(m_spawn);
     m_player.setVelocity({ 0.f, 0.f });
     updateCamera();

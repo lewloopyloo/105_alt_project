@@ -140,7 +140,6 @@ LevelTwoWithTiles::LevelTwoWithTiles(sf::RenderWindow& window, Input& input, Gam
 
 void LevelTwoWithTiles::onBegin()
 {
-	m_player.setCharacter(m_gameState.getSelectedCharacter());
 	m_boopBlock.setAlive(false);
 	m_coin.setAlive(false);
 	m_player.setPosition({ 100, 100 });

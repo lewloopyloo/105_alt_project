@@ -1,6 +1,5 @@
 #include "Menu.h"
 #include <iostream>
-#include <string>
 
 Menu::Menu(sf::RenderWindow& hwnd, Input& in, GameState& gs, AudioManager& aud) :
 	Scene(hwnd, in, gs, aud),
@@ -10,8 +9,6 @@ Menu::Menu(sf::RenderWindow& hwnd, Input& in, GameState& gs, AudioManager& aud) 
 	m_playButton4Label(m_font),
 	m_exitButtonLabel(m_font),
 	m_levelSelectLabel(m_font),
-	m_characterLabel(m_font),
-	m_characterHint(m_font),
 	m_overlayTitle(m_font)
 {
 	if (!m_font.openFromFile("font/bitcount.ttf"))
@@ -72,37 +69,6 @@ Menu::Menu(sf::RenderWindow& hwnd, Input& in, GameState& gs, AudioManager& aud) 
 		float lblY = btnPos.y + (btnSize.y - lblBounds.size.y) / 2.f - lblBounds.position.y;
 		m_exitButtonLabel.setPosition(sf::Vector2f(lblX, lblY));
 	}
-
-	m_characterLabel.setCharacterSize(20);
-	m_characterLabel.setFillColor(sf::Color::White);
-	m_characterLabel.setPosition({ centreX, startY + mainBtnHeight * 2.f + mainBtnSpacing + 16.f });
-
-	m_characterHint.setCharacterSize(16);
-	m_characterHint.setFillColor(sf::Color(230, 230, 230));
-	m_characterHint.setPosition({ centreX, startY + mainBtnHeight * 2.f + mainBtnSpacing + 44.f });
-	m_characterHint.setString("Left/Right to change character");
-
-	// Character preview: idle loop uses same 24x24 frames as Player
-	static const char* previewPaths[] = { "gfx/dino1.png", "gfx/dino2.png", "gfx/dino3.png" };
-	for (int i = 0; i < 3; ++i)
-	{
-		if (!m_previewTextures[i].loadFromFile(previewPaths[i]))
-		{
-			std::cerr << "menu preview missing: " << previewPaths[i] << "\n";
-			if (!m_previewTextures[i].loadFromFile(previewPaths[0]))
-				std::cerr << "menu preview fallback failed\n";
-		}
-		for (int f = 0; f < 4; ++f)
-			m_previewIdleAnims[i].addFrame(sf::IntRect({ f * 24, 0 }, { 24, 24 }));
-		m_previewIdleAnims[i].setFrameSpeed(1.f / 4.f);
-	}
-	const float previewSize = 96.f;
-	m_characterPreview.setSize({ previewSize, previewSize });
-	m_characterPreview.setPosition({
-		(windowSize.x - previewSize) * 0.5f,
-		startY - 104.f });
-	m_characterPreview.setTexture(&m_previewTextures[0]);
-	m_characterPreview.setTextureRect(m_previewIdleAnims[0].getCurrentFrame());
 
 	// --- Setup overlay (popup) that contains the three level choices ---
 	// fullscreen dim to darken background when overlay active
@@ -237,20 +203,6 @@ void Menu::handleInput(float dt)
 	}
 	else
 	{
-		if (m_input.isPressed(sf::Keyboard::Scancode::Left))
-		{
-			m_characterIndex = (m_characterIndex + 2) % 3;
-		}
-		if (m_input.isPressed(sf::Keyboard::Scancode::Right))
-		{
-			m_characterIndex = (m_characterIndex + 1) % 3;
-		}
-
-		CharacterId selected = CharacterId::DINO;
-		if (m_characterIndex == 1) selected = CharacterId::NINJA;
-		if (m_characterIndex == 2) selected = CharacterId::ROBOT;
-		m_gameState.setSelectedCharacter(selected);
-
 		// Not showing overlay: Level Select opens the overlay
 		if (m_input.isLeftMousePressed() &&
 			Collision::checkBoundingBox(m_levelSelectButton, mousePos))
@@ -297,11 +249,8 @@ void Menu::render()
 	else
 	{
 		// main menu: show Level Select and Exit (now centred)
-		m_window.draw(m_characterPreview);
 		m_window.draw(m_levelSelectButton);
 		m_window.draw(m_levelSelectLabel);
-		m_window.draw(m_characterLabel);
-		m_window.draw(m_characterHint);
 
 		m_window.draw(m_exitButton);
 		m_window.draw(m_exitButtonLabel);
@@ -313,22 +262,6 @@ void Menu::render()
 void Menu::update(float dt)
 {
 	sf::Vector2i mousePos{ m_input.getMouseX(), m_input.getMouseY() };
-	const char* characterName = "Dino";
-	if (m_characterIndex == 1) characterName = "Ninja";
-	if (m_characterIndex == 2) characterName = "Robot";
-	m_characterLabel.setString(std::string("Character: ") + characterName);
-
-	if (!m_showLevelMenu)
-	{
-		if (m_characterIndex != m_lastPreviewCharacterIndex)
-		{
-			m_previewIdleAnims[m_characterIndex].reset();
-			m_lastPreviewCharacterIndex = m_characterIndex;
-		}
-		m_previewIdleAnims[m_characterIndex].animate(dt);
-		m_characterPreview.setTexture(&m_previewTextures[m_characterIndex]);
-		m_characterPreview.setTextureRect(m_previewIdleAnims[m_characterIndex].getCurrentFrame());
-	}
 
 	if (m_showLevelMenu)
 	{
@@ -372,11 +305,6 @@ void Menu::update(float dt)
 void Menu::onBegin()
 {
 	std::cout << "starting menu\n";
-	CharacterId current = m_gameState.getSelectedCharacter();
-	if (current == CharacterId::DINO) m_characterIndex = 0;
-	else if (current == CharacterId::NINJA) m_characterIndex = 1;
-	else m_characterIndex = 2;
-	m_lastPreviewCharacterIndex = -1;
 	auto view = m_window.getDefaultView();
 	view.setCenter({ 216, 216 });
 	m_window.setView(view);
