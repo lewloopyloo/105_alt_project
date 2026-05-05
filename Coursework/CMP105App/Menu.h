@@ -1,6 +1,7 @@
 #pragma once
 #include "Scene.h"
 #include "Framework/Collision.h"
+
 class Menu :
     public Scene
 {
@@ -43,6 +44,12 @@ private:
     // overlay title
     sf::Text m_overlayTitle;
 
+    sf::VertexArray m_backdropGradient;
+    sf::RectangleShape m_topShade;
+    sf::RectangleShape m_bottomShade;
+    sf::Text m_mainTitle;
+    sf::Text m_tagline;
+
     GameObject m_titleImage;
     sf::Texture m_titleSplash;
 
@@ -53,6 +60,6 @@ private:
     // state
     bool m_showLevelMenu = false;
 
-    sf::Color m_defaultButtonColour = sf::Color(100, 250, 100, 50);
-    sf::Color m_hoverButtonColour = sf::Color(80, 230, 80, 150);
+    sf::Color m_defaultButtonColour = sf::Color(228, 242, 232, 215);
+    sf::Color m_hoverButtonColour = sf::Color(195, 235, 208, 245);
 };
