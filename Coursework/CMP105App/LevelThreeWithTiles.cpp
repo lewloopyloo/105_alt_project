@@ -183,8 +183,12 @@ LevelThreeWithTiles::LevelThreeWithTiles(sf::RenderWindow& window, Input& input,
     m_flag.setPosition({ 36 * 72.f, 2 * 72.f });
     m_flag.setup();
 
-    // Start the player at the left-bottom ledge.
-    m_spawnPoint = { 2.f * tileWorldSize + 10.f, 5.f * tileWorldSize };
+    // Start the player on top of the first platform block in the route.
+    if (!m_platforms.empty())
+    {
+        const auto firstBlockPos = m_platforms.front().getPosition();
+        m_spawnPoint = { firstBlockPos.x + 10.f, firstBlockPos.y - m_player.getSize().y };
+    }
     m_player.setPosition(m_spawnPoint);
 }
 
@@ -304,25 +308,14 @@ void LevelThreeWithTiles::render()
     m_window.draw(m_flag);
     m_window.draw(m_alertText);
 
-    // Build and draw darkness mask with a circular light around player
+    // Build and draw darkness overlay for full-cave darkness.
     m_darkTexture.clear(sf::Color::Transparent);
 
     sf::RectangleShape darkRect;
     darkRect.setSize({ static_cast<float>(m_window.getSize().x), static_cast<float>(m_window.getSize().y) });
-    darkRect.setFillColor(sf::Color(0, 0, 0, 220));
+    darkRect.setFillColor(sf::Color(0, 0, 0, 210));
     darkRect.setPosition({0.f, 0.f});
     m_darkTexture.draw(darkRect);
-
-    // compute player position in screen space (relative to view)
-    auto viewCenter = m_window.getView().getCenter();
-    auto viewSize = m_window.getView().getSize();
-    sf::Vector2f topLeft = viewCenter - viewSize * 0.5f;
-    sf::Vector2f playerCenter = m_player.getPosition() + m_player.getSize() * 0.5f;
-    sf::Vector2f lightPos = playerCenter - topLeft;
-
-    m_lightMask.setPosition(lightPos);
-    // draw the transparent circle using BlendNone so it overwrites the dark rect
-    m_darkTexture.draw(m_lightMask, sf::RenderStates{ sf::BlendNone });
     m_darkTexture.display();
 
     sf::Sprite darkSprite(m_darkTexture.getTexture());
