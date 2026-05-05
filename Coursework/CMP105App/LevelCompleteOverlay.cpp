@@ -12,7 +12,6 @@ void LevelCompleteOverlay::centerLabelOnButton(sf::Text& label, const GameObject
 
 void LevelCompleteOverlay::configure(sf::Font& font, float windowW, float windowH, State nextLevelState, bool hasNextLevel)
 {
-    m_font = &font;
     m_hasNext = hasNextLevel;
     m_nextState = nextLevelState;
 
@@ -35,39 +34,32 @@ void LevelCompleteOverlay::configure(sf::Font& font, float windowW, float window
     const float btnH = 58.f;
     const float btnX = panelX + (panelW - btnW) * 0.5f;
 
-    m_title.setFont(font);
-    m_title.setString("Level complete!");
-    m_title.setCharacterSize(26);
-    m_title.setFillColor(sf::Color(255, 246, 225));
-    m_title.setOutlineColor(sf::Color(14, 18, 30));
-    m_title.setOutlineThickness(3.f);
+    m_title = std::make_unique<sf::Text>(font, sf::String("Level complete!"), 26);
+    m_title->setFillColor(sf::Color(255, 246, 225));
+    m_title->setOutlineColor(sf::Color(14, 18, 30));
+    m_title->setOutlineThickness(3.f);
     {
-        sf::FloatRect b = m_title.getLocalBounds();
-        m_title.setOrigin({ b.position.x + b.size.x * 0.5f, b.position.y + b.size.y * 0.5f });
-        m_title.setPosition({ windowW * 0.5f, panelY + 42.f });
+        sf::FloatRect b = m_title->getLocalBounds();
+        m_title->setOrigin({ b.position.x + b.size.x * 0.5f, b.position.y + b.size.y * 0.5f });
+        m_title->setPosition({ windowW * 0.5f, panelY + 42.f });
     }
 
-    m_subtitle.setFont(font);
-    m_subtitle.setString(hasNextLevel ? "Choose where to go next." : "You've cleared every job site.");
-    m_subtitle.setCharacterSize(14);
-    m_subtitle.setFillColor(sf::Color(190, 210, 220));
-    m_subtitle.setOutlineColor(sf::Color(12, 16, 26));
-    m_subtitle.setOutlineThickness(1.f);
+    m_subtitle = std::make_unique<sf::Text>(font,
+        sf::String(hasNextLevel ? "Choose where to go next." : "You've cleared every job site."), 14);
+    m_subtitle->setFillColor(sf::Color(190, 210, 220));
+    m_subtitle->setOutlineColor(sf::Color(12, 16, 26));
+    m_subtitle->setOutlineThickness(1.f);
     {
-        sf::FloatRect b = m_subtitle.getLocalBounds();
-        m_subtitle.setOrigin({ b.position.x + b.size.x * 0.5f, b.position.y + b.size.y * 0.5f });
-        m_subtitle.setPosition({ windowW * 0.5f, panelY + 76.f });
+        sf::FloatRect b = m_subtitle->getLocalBounds();
+        m_subtitle->setOrigin({ b.position.x + b.size.x * 0.5f, b.position.y + b.size.y * 0.5f });
+        m_subtitle->setPosition({ windowW * 0.5f, panelY + 76.f });
     }
 
-    m_nextLabel.setFont(font);
-    m_nextLabel.setString("Next level");
-    m_nextLabel.setCharacterSize(18);
-    m_nextLabel.setFillColor(sf::Color(26, 44, 34));
+    m_nextLabel = std::make_unique<sf::Text>(font, sf::String("Next level"), 18);
+    m_nextLabel->setFillColor(sf::Color(26, 44, 34));
 
-    m_menuLabel.setFont(font);
-    m_menuLabel.setString("Main menu");
-    m_menuLabel.setCharacterSize(18);
-    m_menuLabel.setFillColor(sf::Color(26, 44, 34));
+    m_menuLabel = std::make_unique<sf::Text>(font, sf::String("Main menu"), 18);
+    m_menuLabel->setFillColor(sf::Color(26, 44, 34));
 
     if (m_hasNext)
     {
@@ -88,8 +80,8 @@ void LevelCompleteOverlay::configure(sf::Font& font, float windowW, float window
         m_menuButton.setOutlineThickness(2.f);
         m_menuButton.setOutlineColor(sf::Color(255, 255, 255, 70));
 
-        centerLabelOnButton(m_nextLabel, m_nextButton);
-        centerLabelOnButton(m_menuLabel, m_menuButton);
+        centerLabelOnButton(*m_nextLabel, m_nextButton);
+        centerLabelOnButton(*m_menuLabel, m_menuButton);
     }
     else
     {
@@ -104,7 +96,7 @@ void LevelCompleteOverlay::configure(sf::Font& font, float windowW, float window
         m_menuButton.setOutlineThickness(2.f);
         m_menuButton.setOutlineColor(sf::Color(255, 255, 255, 70));
 
-        centerLabelOnButton(m_menuLabel, m_menuButton);
+        centerLabelOnButton(*m_menuLabel, m_menuButton);
     }
 }
 
@@ -143,15 +135,15 @@ void LevelCompleteOverlay::render(sf::RenderWindow& window)
 {
     window.draw(m_dim);
     window.draw(m_panel);
-    window.draw(m_title);
-    window.draw(m_subtitle);
+    if (m_title) window.draw(*m_title);
+    if (m_subtitle) window.draw(*m_subtitle);
 
     if (m_hasNext)
     {
         window.draw(m_nextButton);
-        window.draw(m_nextLabel);
+        if (m_nextLabel) window.draw(*m_nextLabel);
     }
 
     window.draw(m_menuButton);
-    window.draw(m_menuLabel);
+    if (m_menuLabel) window.draw(*m_menuLabel);
 }

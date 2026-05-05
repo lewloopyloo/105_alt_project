@@ -5,6 +5,7 @@
 #include "Framework/GameState.h"
 #include "Framework/Input.h"
 #include <SFML/Graphics.hpp>
+#include <memory>
 
 class LevelCompleteOverlay
 {
@@ -18,7 +19,6 @@ public:
 private:
     static void centerLabelOnButton(sf::Text& label, const GameObject& button);
 
-    sf::Font* m_font = nullptr;
     bool m_hasNext = true;
     State m_nextState = State::LEVELTWO;
 
@@ -27,10 +27,10 @@ private:
     GameObject m_nextButton;
     GameObject m_menuButton;
 
-    sf::Text m_title;
-    sf::Text m_subtitle;
-    sf::Text m_nextLabel;
-    sf::Text m_menuLabel;
+    std::unique_ptr<sf::Text> m_title;
+    std::unique_ptr<sf::Text> m_subtitle;
+    std::unique_ptr<sf::Text> m_nextLabel;
+    std::unique_ptr<sf::Text> m_menuLabel;
 
     sf::Color m_btnIdle = sf::Color(228, 242, 232, 238);
     sf::Color m_btnHover = sf::Color(195, 235, 208, 255);
