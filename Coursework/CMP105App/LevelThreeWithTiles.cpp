@@ -230,6 +230,8 @@ void LevelThreeWithTiles::handleInput(float dt)
             m_player.setPosition(m_spawnPoint);
             m_player.setVelocity({ 0.f, 0.f });
             m_player.setCanDoubleJump(false);
+            // Consume R so it cannot trigger any same-frame movement logic.
+            m_input.setKeyUp(sf::Keyboard::Scancode::R);
             m_isDead = false;
             updateCameraAndBackground();
         }
