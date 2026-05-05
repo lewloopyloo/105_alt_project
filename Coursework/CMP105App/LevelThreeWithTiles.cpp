@@ -210,9 +210,16 @@ void LevelThreeWithTiles::onEnd()
 void LevelThreeWithTiles::handleInput(float dt)
 {
     if (!m_isDead)
+    {
         m_player.handleInput(dt);
+        if (m_input.isPressed(sf::Keyboard::Scancode::Escape))
+        {
+            m_gameState.setCurrentState(State::MENU);
+            return;
+        }
+    }
 
-    // if I press F on the flag  / I press escape.
+    // if I press F on the flag
     if (!m_isDead &&
         ((m_flag.getPosition() - m_player.getPosition()).length() < 90 &&
          m_input.isPressed(sf::Keyboard::Scancode::F)) )
