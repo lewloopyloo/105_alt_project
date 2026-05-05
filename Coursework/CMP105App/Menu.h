@@ -39,6 +39,8 @@ private:
 
     // label for the single Level Select button
     sf::Text m_levelSelectLabel;
+    sf::Text m_characterLabel;
+    sf::Text m_characterHint;
 
     // overlay title
     sf::Text m_overlayTitle;
@@ -48,6 +50,7 @@ private:
 
     // state
     bool m_showLevelMenu = false;
+    int m_characterIndex = 0;
 
     sf::Color m_defaultButtonColour = sf::Color(100, 250, 100, 50);
     sf::Color m_hoverButtonColour = sf::Color(80, 230, 80, 150);

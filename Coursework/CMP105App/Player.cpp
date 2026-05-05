@@ -1,11 +1,9 @@
 #include "Player.h"
+#include <array>
 
 Player::Player()
 {
-	if (!m_dinoTexture.loadFromFile("gfx/dino1.png"))
-		std::cerr << "No dino texture. sad";
-
-	setTexture(&m_dinoTexture);
+	setCharacter(CharacterId::DINO);
 	// Dino is 24x24, tiles are 18x18
 	// LCM(18,24) = 72.
 	setSize({ 72,72 });		
@@ -172,4 +170,34 @@ void Player::reset()
 	m_velocity = { 0,0 };
 	m_leverPulled = false;
 	m_gameEndTriggered = false;
+}
+
+void Player::setCharacter(CharacterId id)
+{
+	static const std::array<const char*, 3> texturePaths =
+	{
+		"gfx/dino1.png",
+		"gfx/dino2.png",
+		"gfx/dino3.png"
+	};
+
+	m_characterId = id;
+	const int idx = static_cast<int>(id);
+	const char* selectedPath = texturePaths[0];
+	if (idx >= 0 && idx < static_cast<int>(texturePaths.size()))
+	{
+		selectedPath = texturePaths[idx];
+	}
+
+	if (!m_characterTexture.loadFromFile(selectedPath))
+	{
+		std::cerr << "Missing character texture: " << selectedPath << "\n";
+		if (!m_characterTexture.loadFromFile(texturePaths[0]))
+		{
+			std::cerr << "Missing fallback character texture: " << texturePaths[0] << "\n";
+		}
+		m_characterId = CharacterId::DINO;
+	}
+
+	setTexture(&m_characterTexture);
 }

@@ -1,6 +1,7 @@
 #pragma once
 #include "Framework/GameObject.h"
 #include "Framework/Animation.h"
+#include "Framework/GameState.h"
 #include <iostream>
 #include "Framework/AudioManager.h"
 
@@ -25,9 +26,12 @@ public:
     void setCanDoubleJump(bool value) { m_canDoubleJump = value; };
     bool canDoubleJump() { return m_canDoubleJump; };
     void setAudio(AudioManager* audio) { m_audio = audio; };
+    void setCharacter(CharacterId id);
+    CharacterId getCharacter() const { return m_characterId; }
 
 private:
-    sf::Texture m_dinoTexture;
+    sf::Texture m_characterTexture;
+    CharacterId m_characterId = CharacterId::DINO;
     Animation* m_currAnim;
     Animation m_idle;
     Animation m_walk;

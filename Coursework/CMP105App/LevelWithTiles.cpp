@@ -297,6 +297,7 @@ void LevelWithTiles::render()
 void LevelWithTiles::onBegin()
 {
 	std::cout << "Level one has been started\n";
+	m_player.setCharacter(m_gameState.getSelectedCharacter());
 	m_audio.playMusicbyName("bgm1");
 	m_isDead = false;
 	

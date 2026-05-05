@@ -11,3 +11,13 @@ State GameState::getCurrentState()
 {
 	return m_currentState;
 }
+
+void GameState::setSelectedCharacter(CharacterId id)
+{
+	m_selectedCharacter = id;
+}
+
+CharacterId GameState::getSelectedCharacter() const
+{
+	return m_selectedCharacter;
+}
