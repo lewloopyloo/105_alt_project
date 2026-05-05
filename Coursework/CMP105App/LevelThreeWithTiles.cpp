@@ -46,7 +46,7 @@ LevelThreeWithTiles::LevelThreeWithTiles(sf::RenderWindow& window, Input& input,
         b  , b  , b  , b  , b  , b  , b  , b  , b  , b  , b  , b  , b  , b  , b  , b  , b  , b  , b  , b  , b  , b  , b, b, b, b, b, b, b, b, b, b  , b  , b  , b  , b  , b  , b  , b  , b  ,
         b  , b  , b  , b  , b  , b  , b  , b  , b  , b  , b  , b  , b  , b  , b  , b  , b  , b  , b  , b  , b  , b  , b, b, b, b, b, b, b, b, b, b  , b  , b  , b  , b  , b  , b  , b  , b  ,
         b  , b  , b  , b  , b  , b  , b  , b  , b  , b  , b  , b  , b  , b  , b  , b  , b  , b  , b  , b  , b  , b  , b, b, b, b, b, b, b, b, b, b  , b  , b  , b  , b  , b  , b  , b  , b  ,
-        21 , 22 , 22 , 22 , 22 , 22 , 22 , 22 , 22 , 22 , 22 , 22 , 22 , 22 , 22 , 22 , 22 , 22 , 22 , 22 , 22 , 23 , b, b, b, b, b, b, b, b, b, 21 , 22 , 22 , 22 , 22 , 22 , 22 , 22 , 23 ,
+        b  , b  , b  , b  , b  , b  , b  , b  , b  , b  , b  , b  , b  , b  , b  , b  , b  , b  , b  , b  , b  , b  , b, b, b, b, b, b, b, b, b, b  , b  , b  , b  , b  , b  , b  , b  , b  ,
         b  , b  , b  , b  , b  , b  , b  , b  , b  , b  , b  , b  , b  , b  , b  , b  , b  , b  , b  , b  , b  , b  , b, b, b, b, b, b, b, b, b, b  , b  , b  , b  , b  , b  , b  , b  , b
     };
 
@@ -148,17 +148,16 @@ LevelThreeWithTiles::LevelThreeWithTiles(sf::RenderWindow& window, Input& input,
         {2, 6, 3},
         {6, 5, 2},
 
-        // Mid route: fewer, narrower islands for harder jumps
-        {11, 6, 1},
-        {14, 5, 1},
-        {17, 4, 1},
-        {20, 5, 1},
-        {23, 4, 1},
+        // Mid route: longer landings with stronger vertical variation
+        {11, 6, 2},
+        {15, 4, 2},
+        {20, 5, 2},
+        {24, 3, 2},
 
         // Right side finish route
-        {27, 6, 2},
-        {31, 5, 2},
-        {35, 3, 2}
+        {28, 6, 2},
+        {32, 4, 2},
+        {36, 3, 2}
     };
 
     for (const auto& chunk : chunks)
