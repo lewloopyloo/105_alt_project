@@ -1,5 +1,6 @@
 #pragma once
 #include "Scene.h"
+#include "LevelCompleteOverlay.h"
 #include "Framework/Collision.h"
 #include "Player.h"
 #include "Flag.h"
@@ -55,4 +56,7 @@ private:
     const float m_worldRight = 2880.f;
     const float m_padInteractDistance = 110.f;
     const sf::Vector2f m_viewSize = { 432.f, 432.f };
+
+    bool m_levelComplete = false;
+    LevelCompleteOverlay m_levelCompleteOverlay;
 };

@@ -1,5 +1,6 @@
 #pragma once
 #include "Scene.h"
+#include "LevelCompleteOverlay.h"
 #include "Framework/Collision.h"
 #include "Framework/TileMap.h"
 #include "Player.h"
@@ -62,6 +63,9 @@ private:
     sf::RenderTexture m_darkTexture;
     float m_lightRadius = 56.f; // slightly larger than the 72x72 player
     sf::CircleShape m_lightMask;
+
+    bool m_levelComplete = false;
+    LevelCompleteOverlay m_levelCompleteOverlay;
 };
 
 

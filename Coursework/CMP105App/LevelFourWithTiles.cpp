@@ -64,6 +64,11 @@ LevelFourWithTiles::LevelFourWithTiles(sf::RenderWindow& window, Input& input, G
     }
 
     if (!m_font.openFromFile("font/bitcount.ttf")) std::cerr << "no font found";
+    m_levelCompleteOverlay.configure(m_font,
+        static_cast<float>(m_window.getSize().x),
+        static_cast<float>(m_window.getSize().y),
+        State::MENU, false);
+
     m_label.setCharacterSize(20);
     m_label.setFillColor(sf::Color::White);
     m_label.setString("Level 4 - Color Puzzle Chamber\nPress F near a color tile");
@@ -82,6 +87,7 @@ LevelFourWithTiles::LevelFourWithTiles(sf::RenderWindow& window, Input& input, G
 
 void LevelFourWithTiles::onBegin()
 {
+    m_levelComplete = false;
     resetPuzzle();
     m_player.setPosition(m_spawn);
     m_player.setVelocity({ 0.f, 0.f });
@@ -95,26 +101,39 @@ void LevelFourWithTiles::onEnd()
 
 void LevelFourWithTiles::handleInput(float dt)
 {
+    if (m_levelComplete)
+    {
+        m_levelCompleteOverlay.handleInput(m_input, m_gameState);
+        if (m_input.isPressed(sf::Keyboard::Scancode::Escape))
+            m_gameState.setCurrentState(State::MENU);
+        return;
+    }
+
     m_player.handleInput(dt);
 
     if (m_input.isPressed(sf::Keyboard::Scancode::F))
     {
         if (m_doorOpen && (m_flag.getPosition() - m_player.getPosition()).length() < 100.f)
         {
-            m_gameState.setCurrentState(State::MENU);
+            m_levelComplete = true;
             return;
         }
         activateNearestPad();
     }
 
     if (m_input.isPressed(sf::Keyboard::Scancode::Escape))
-    {
         m_gameState.setCurrentState(State::MENU);
-    }
 }
 
 void LevelFourWithTiles::update(float dt)
 {
+    if (m_levelComplete)
+    {
+        m_levelCompleteOverlay.updateHover(m_input);
+        updateCamera();
+        return;
+    }
+
     m_player.update(dt);
     m_flag.update(dt);
 
@@ -179,6 +198,13 @@ void LevelFourWithTiles::render()
     m_window.draw(m_label);
     m_window.draw(m_sequenceText);
     m_window.draw(m_flagText);
+
+    if (m_levelComplete)
+    {
+        m_window.setView(m_window.getDefaultView());
+        m_levelCompleteOverlay.render(m_window);
+    }
+
     endDraw();
 }
 

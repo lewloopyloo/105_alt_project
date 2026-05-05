@@ -94,6 +94,10 @@ LevelTwoWithTiles::LevelTwoWithTiles(sf::RenderWindow& window, Input& input, Gam
 	m_player.setAudio(&m_audio);
 
 	if (!m_font.openFromFile("font/bitcount.ttf")) std::cerr << "no font found";
+	m_levelCompleteOverlay.configure(m_font,
+		static_cast<float>(m_window.getSize().x),
+		static_cast<float>(m_window.getSize().y),
+		State::LEVELTHREE, true);
 
 	sf::Vector2f boop_location = { 100, 72 * 2 + 100 };
 
@@ -115,7 +119,6 @@ LevelTwoWithTiles::LevelTwoWithTiles(sf::RenderWindow& window, Input& input, Gam
 	m_flag.setSize({ 72,72 });
 	m_flag.setTexture(&m_tileTexture);
 
-	if (!m_font.openFromFile("font/bitcount.ttf")) std::cerr << "no font found";
 	m_alertText.setPosition({ 50, 150 });
 	m_alertText.setCharacterSize(36);
 	m_alertText.setFillColor(sf::Color::Black);
@@ -139,6 +142,7 @@ void LevelTwoWithTiles::onBegin()
 	m_player.setPosition({ 100, 100 });
 	m_player.setCanDoubleJump(false);
 	m_isDead = false;
+	m_levelComplete = false;
 	m_audio.playMusicbyName("bgm3");
 }
 
@@ -151,16 +155,6 @@ void LevelTwoWithTiles::onEnd()
 
 void LevelTwoWithTiles::handleInput(float dt)
 {
-	if (!m_isDead)
-		m_player.handleInput(dt);
-
-	if (!m_isDead &&
-		((m_flag.getPosition() - m_player.getPosition()).length() < 75 &&
-		m_input.isPressed(sf::Keyboard::Scancode::F)) )
-	{
-		m_gameState.setCurrentState(State::MENU);
-	}
-
 	if (m_isDead)
 	{
 		if (m_input.isPressed(sf::Keyboard::Scancode::R))
@@ -171,16 +165,35 @@ void LevelTwoWithTiles::handleInput(float dt)
 			updateCameraAndBackground();
 		}
 		else if (m_input.isPressed(sf::Keyboard::Scancode::Escape))
-		{
 			m_gameState.setCurrentState(State::MENU);
-		}
+		return;
 	}
+
+	if (m_levelComplete)
+	{
+		m_levelCompleteOverlay.handleInput(m_input, m_gameState);
+		if (m_input.isPressed(sf::Keyboard::Scancode::Escape))
+			m_gameState.setCurrentState(State::MENU);
+		return;
+	}
+
+	m_player.handleInput(dt);
+
+	if ((m_flag.getPosition() - m_player.getPosition()).length() < 75 &&
+		m_input.isPressed(sf::Keyboard::Scancode::F))
+		m_levelComplete = true;
 }
 
 void LevelTwoWithTiles::update(float dt)
 {
 	if (m_isDead)
 		return;
+
+	if (m_levelComplete)
+	{
+		m_levelCompleteOverlay.updateHover(m_input);
+		return;
+	}
 
 	m_player.update(dt);
 	m_flag.update(dt);
@@ -296,7 +309,8 @@ void LevelTwoWithTiles::render()
 	m_window.draw(m_flag);
 	m_window.draw(m_player);
 	if (m_coin.isAlive()) m_window.draw(m_coin);
-	m_window.draw(m_alertText);
+	if (!m_levelComplete)
+		m_window.draw(m_alertText);
 
 	if (m_isDead)
 	{
@@ -309,6 +323,12 @@ void LevelTwoWithTiles::render()
 
 		m_window.draw(m_deathOverlay);
 		m_window.draw(m_deathText);
+	}
+
+	if (m_levelComplete && !m_isDead)
+	{
+		m_window.setView(m_window.getDefaultView());
+		m_levelCompleteOverlay.render(m_window);
 	}
 
 	endDraw();

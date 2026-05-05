@@ -90,6 +90,11 @@ LevelWithTiles::LevelWithTiles(sf::RenderWindow& window, Input& input, GameState
 	m_player.setEdges(0, WORLD_SIZE.x);
 
 	if (!m_font.openFromFile("font/bitcount.ttf")) std::cerr << "no font found";
+	m_levelCompleteOverlay.configure(m_font,
+		static_cast<float>(m_window.getSize().x),
+		static_cast<float>(m_window.getSize().y),
+		State::LEVELTWO, true);
+
 	m_alertText.setString("Who keeps turning\nthe wind off?");
 	m_alertText.setPosition({ 50, 150});
 	m_alertText.setCharacterSize(36);
@@ -128,15 +133,7 @@ LevelWithTiles::LevelWithTiles(sf::RenderWindow& window, Input& input, GameState
 
 void LevelWithTiles::handleInput(float dt)
 {
-	if (!m_isDead)
-		m_player.handleInput(dt);
-
-	if (!m_isDead)
-	{
-		if (m_input.isPressed(sf::Keyboard::Scancode::Escape))
-			m_gameState.setCurrentState(State::MENU);
-	}
-	else
+	if (m_isDead)
 	{
 		if (m_input.isPressed(sf::Keyboard::Scancode::R))
 		{
@@ -145,16 +142,32 @@ void LevelWithTiles::handleInput(float dt)
 			updateCameraAndBackground();
 		}
 		else if (m_input.isPressed(sf::Keyboard::Scancode::Escape))
-		{
 			m_gameState.setCurrentState(State::MENU);
-		}
+		return;
 	}
+
+	if (m_levelComplete)
+	{
+		m_levelCompleteOverlay.handleInput(m_input, m_gameState);
+		if (m_input.isPressed(sf::Keyboard::Scancode::Escape))
+			m_gameState.setCurrentState(State::MENU);
+		return;
+	}
+
+	m_player.handleInput(dt);
+
+	if (m_input.isPressed(sf::Keyboard::Scancode::Escape))
+		m_gameState.setCurrentState(State::MENU);
 }
 
 void LevelWithTiles::update(float dt)
 {
 	if (m_isDead)
+		return;
+
+	if (m_levelComplete)
 	{
+		m_levelCompleteOverlay.updateHover(m_input);
 		return;
 	}
 
@@ -212,9 +225,7 @@ void LevelWithTiles::update(float dt)
 		m_lever.setUsed(false);
 	}
 	if (m_player.getGameEndTriggered())
-	{
-		m_gameState.setCurrentState(State::MENU);
-	}
+		m_levelComplete = true;
 
 
 	if (m_player.getPosition().y > 1200)
@@ -253,7 +264,7 @@ void LevelWithTiles::render()
 	m_window.draw(m_lever);
 	for (auto& flag : m_flags) m_window.draw(*flag);
 	m_window.draw(m_player);
-	if (!m_isDead)
+	if (!m_isDead && !m_levelComplete)
 		m_window.draw(m_alertText);
 
 	if (m_isDead)
@@ -269,6 +280,12 @@ void LevelWithTiles::render()
 		m_window.draw(m_deathText);
 	}
 
+	if (m_levelComplete && !m_isDead)
+	{
+		m_window.setView(m_window.getDefaultView());
+		m_levelCompleteOverlay.render(m_window);
+	}
+
 	endDraw();
 }
 
@@ -277,7 +294,7 @@ void LevelWithTiles::onBegin()
 	std::cout << "Level one has been started\n";
 	m_audio.playMusicbyName("bgm1");
 	m_isDead = false;
-	
+	m_levelComplete = false;
 }
 
 void LevelWithTiles::onEnd()

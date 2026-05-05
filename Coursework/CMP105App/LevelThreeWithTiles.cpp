@@ -91,6 +91,10 @@ LevelThreeWithTiles::LevelThreeWithTiles(sf::RenderWindow& window, Input& input,
     m_player.setAudio(&m_audio);
 
     if (!m_font.openFromFile("font/bitcount.ttf")) std::cerr << "no font found";
+    m_levelCompleteOverlay.configure(m_font,
+        static_cast<float>(m_window.getSize().x),
+        static_cast<float>(m_window.getSize().y),
+        State::LEVELFOUR, true);
 
     if (!m_tileTexture.loadFromFile("gfx/tilemap.png")) std::cerr << "failed to find tile images";
 
@@ -174,6 +178,7 @@ LevelThreeWithTiles::LevelThreeWithTiles(sf::RenderWindow& window, Input& input,
 void LevelThreeWithTiles::onBegin()
 {
     m_isDead = false;
+    m_levelComplete = false;
     m_player.setCanDoubleJump(false); // level 3 is single-jump only
 
     setSpawnFromFirstPlatform();
@@ -190,23 +195,6 @@ void LevelThreeWithTiles::onEnd()
 
 void LevelThreeWithTiles::handleInput(float dt)
 {
-    if (!m_isDead)
-    {
-        m_player.handleInput(dt);
-        if (m_input.isPressed(sf::Keyboard::Scancode::Escape))
-        {
-            m_gameState.setCurrentState(State::MENU);
-            return;
-        }
-    }
-
-    if (!m_isDead &&
-        ((m_flag.getPosition() - m_player.getPosition()).length() < 90 &&
-         m_input.isPressed(sf::Keyboard::Scancode::F)) )
-    {
-        m_gameState.setCurrentState(State::MENU);
-    }
-
     if (m_isDead)
     {
         if (m_input.isPressed(sf::Keyboard::Scancode::R))
@@ -220,15 +208,40 @@ void LevelThreeWithTiles::handleInput(float dt)
             updateCameraAndBackground();
         }
         else if (m_input.isPressed(sf::Keyboard::Scancode::Escape))
-        {
             m_gameState.setCurrentState(State::MENU);
-        }
+        return;
     }
+
+    if (m_levelComplete)
+    {
+        m_levelCompleteOverlay.handleInput(m_input, m_gameState);
+        if (m_input.isPressed(sf::Keyboard::Scancode::Escape))
+            m_gameState.setCurrentState(State::MENU);
+        return;
+    }
+
+    m_player.handleInput(dt);
+
+    if (m_input.isPressed(sf::Keyboard::Scancode::Escape))
+    {
+        m_gameState.setCurrentState(State::MENU);
+        return;
+    }
+
+    if ((m_flag.getPosition() - m_player.getPosition()).length() < 90 &&
+        m_input.isPressed(sf::Keyboard::Scancode::F))
+        m_levelComplete = true;
 }
 
 void LevelThreeWithTiles::update(float dt)
 {
     if (m_isDead) return;
+
+    if (m_levelComplete)
+    {
+        m_levelCompleteOverlay.updateHover(m_input);
+        return;
+    }
 
     m_player.update(dt);
 
@@ -286,7 +299,8 @@ void LevelThreeWithTiles::render()
 
     m_window.draw(m_player);
     m_window.draw(m_flag);
-    m_window.draw(m_alertText);
+    if (!m_levelComplete)
+        m_window.draw(m_alertText);
 
     m_darkTexture.clear(sf::Color::Transparent);
 
@@ -320,6 +334,12 @@ void LevelThreeWithTiles::render()
 
         m_window.draw(m_deathOverlay);
         m_window.draw(m_deathText);
+    }
+
+    if (m_levelComplete && !m_isDead)
+    {
+        m_window.setView(m_window.getDefaultView());
+        m_levelCompleteOverlay.render(m_window);
     }
 
     endDraw();

@@ -1,5 +1,6 @@
 #pragma once
 #include "Scene.h"
+#include "LevelCompleteOverlay.h"
 #include "Framework/Collision.h"
 #include "Framework/TileMap.h"
 #include "Player.h"
@@ -42,5 +43,7 @@ private:
     sf::RectangleShape m_deathOverlay;
     sf::Text m_deathText;
 
+    bool m_levelComplete = false;
+    LevelCompleteOverlay m_levelCompleteOverlay;
 };
 
