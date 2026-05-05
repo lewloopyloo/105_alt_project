@@ -60,8 +60,8 @@ private:
 
     // Cave vision members
     sf::RenderTexture m_darkTexture;
-    sf::CircleShape m_lightMask;
     float m_lightRadius = 56.f; // slightly larger than the 72x72 player
+    sf::CircleShape m_lightMask;
 };
 
 
